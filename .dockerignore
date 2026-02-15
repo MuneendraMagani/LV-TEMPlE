@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.env
+.git
+*.md
+.vscode
+.cursor
+snowflake.log
+temp-*.css
+data/*.json
