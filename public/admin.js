@@ -237,6 +237,87 @@
       .catch(function() { alert('Failed to add user.'); });
   });
 
+  document.getElementById('changePasswordBtn').addEventListener('click', function() {
+    closeUserDropdown();
+    document.getElementById('changePasswordModal').style.display = 'flex';
+    document.getElementById('currentPassword').focus();
+  });
+
+  document.getElementById('closeModalBtn').addEventListener('click', function() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordMessage').style.display = 'none';
+  });
+
+  document.getElementById('cancelModalBtn').addEventListener('click', function() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordMessage').style.display = 'none';
+  });
+
+  // Close modal on outside click
+  document.getElementById('changePasswordModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      document.getElementById('changePasswordForm').reset();
+      document.getElementById('changePasswordMessage').style.display = 'none';
+    }
+  });
+
+  document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var current = document.getElementById('currentPassword').value;
+    var newPass = document.getElementById('newPasswordChange').value;
+    var confirm = document.getElementById('confirmPassword').value;
+    var msgEl = document.getElementById('changePasswordMessage');
+    
+    if (newPass !== confirm) {
+      msgEl.textContent = 'New passwords do not match!';
+      msgEl.style.display = 'block';
+      msgEl.style.color = '#c0392b';
+      return;
+    }
+    
+    if (newPass.length < 4) {
+      msgEl.textContent = 'Password must be at least 4 characters long.';
+      msgEl.style.display = 'block';
+      msgEl.style.color = '#c0392b';
+      return;
+    }
+    
+    fetch('/api/change-password', {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+      body: JSON.stringify({ currentPassword: current, newPassword: newPass })
+    }).then(function(r) {
+        if (r.status === 401) {
+          msgEl.textContent = 'Current password is incorrect.';
+          msgEl.style.display = 'block';
+          msgEl.style.color = '#c0392b';
+        } else if (r.ok) {
+          msgEl.textContent = 'Password changed successfully!';
+          msgEl.style.display = 'block';
+          msgEl.style.color = '#27ae60';
+          document.getElementById('changePasswordForm').reset();
+          setTimeout(function() { 
+            document.getElementById('changePasswordModal').style.display = 'none';
+            msgEl.style.display = 'none';
+          }, 2000);
+        } else {
+          return r.json().then(function(d) {
+            msgEl.textContent = d.error || 'Failed to change password.';
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#c0392b';
+          });
+        }
+      })
+      .catch(function() {
+        msgEl.textContent = 'Failed to change password.';
+        msgEl.style.display = 'block';
+        msgEl.style.color = '#c0392b';
+      });
+  });
+
   document.getElementById('requestPassword').addEventListener('click', function(e) {
     e.preventDefault();
     alert('Please contact the temple administrator to reset your password.');

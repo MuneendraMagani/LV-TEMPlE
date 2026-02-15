@@ -254,6 +254,42 @@ async function deleteAdmin(id) {
   await runQuery(`DELETE FROM ADMINS WHERE ID = ?`, [id]);
 }
 
+async function changePassword(userId, currentPassword, newPassword) {
+  if (!userId || !currentPassword || !newPassword) {
+    throw new Error('User ID, current password, and new password required');
+  }
+  
+  // Verify current password first
+  if (!useSnowflake()) {
+    const admins = readAdminsFile();
+    const admin = admins.find((a) => a.id === userId);
+    if (!admin) throw new Error('User not found');
+    
+    if (!bcrypt.compareSync(currentPassword, admin.passwordHash)) {
+      return false; // Current password incorrect
+    }
+    
+    // Hash and update new password
+    const hash = bcrypt.hashSync(newPassword, 10);
+    admin.passwordHash = hash;
+    writeAdminsFile(admins);
+    return true;
+  }
+  
+  // Snowflake: verify current password
+  const rows = await runQuery(`SELECT PASSWORD_HASH FROM ADMINS WHERE ID = ?`, [userId]);
+  if (!rows || rows.length === 0) throw new Error('User not found');
+  
+  if (!bcrypt.compareSync(currentPassword, rows[0].PASSWORD_HASH)) {
+    return false; // Current password incorrect
+  }
+  
+  // Update with new password
+  const hash = bcrypt.hashSync(newPassword, 10);
+  await runQuery(`UPDATE ADMINS SET PASSWORD_HASH = ? WHERE ID = ?`, [hash, userId]);
+  return true;
+}
+
 module.exports = {
   init,
   getPujas,
@@ -263,6 +299,7 @@ module.exports = {
   getAdmins,
   addAdmin,
   deleteAdmin,
+  changePassword,
   useSnowflake,
   ROLES,
 };

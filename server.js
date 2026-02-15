@@ -203,6 +203,41 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // API: POST /api/change-password (authenticated users)
+  if (pathname === '/api/change-password' && req.method === 'POST') {
+    if (!isAuthenticated(req)) {
+      sendJson(res, 401, { error: 'Not authenticated' });
+      return;
+    }
+    try {
+      const { currentPassword, newPassword } = await parseBody(req);
+      const session = getSession(req);
+      
+      if (!currentPassword || !newPassword) {
+        sendJson(res, 400, { error: 'Current password and new password required' });
+        return;
+      }
+      
+      if (newPassword.length < 4) {
+        sendJson(res, 400, { error: 'Password must be at least 4 characters' });
+        return;
+      }
+      
+      const success = await db.changePassword(session.userId, currentPassword, newPassword);
+      
+      if (!success) {
+        sendJson(res, 401, { error: 'Current password is incorrect' });
+        return;
+      }
+      
+      sendJson(res, 200, { success: true, message: 'Password changed successfully' });
+    } catch (e) {
+      console.error('Change password error:', e);
+      sendJson(res, 500, { error: e.message || 'Failed to change password' });
+    }
+    return;
+  }
+
   // Route /admin to login page
   if (pathname === '/admin') {
     const filePath = path.join(__dirname, 'public', 'admin.html');

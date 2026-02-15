@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
+  <div id="om-bg" class="om-bg" aria-hidden="true"></div>
   <header class="temple-header">
     <img src="/header-banner.png" alt="Lakshmi Venkateswara Temple - Srivenkateswara Vedic Education and Training Academy" class="header-image">
   </header>
@@ -39,6 +40,7 @@
             <span class="admin-user-chevron" aria-hidden="true">▼</span>
           </button>
           <div class="admin-user-dropdown" id="adminUserDropdown" role="menu" hidden>
+            <button type="button" id="changePasswordBtn" class="admin-user-dropdown-item" role="menuitem">Change Password</button>
             <button type="button" id="logoutBtn" class="admin-user-dropdown-item" role="menuitem">Log out</button>
           </div>
         </div>
@@ -85,16 +87,25 @@
         <div id="pujaList"></div>
       </section>
       <section id="manageUsersSection" class="admin-tab-panel manage-users" data-tab="users">
-        <h2>Manage users</h2>
+        <h2>Manage Users</h2>
         <p class="hint">Only super admin can add or remove people who can access this app.</p>
+        
+        <h3>➕ Add New User</h3>
         <form id="addUserForm">
-          <label>New username *</label>
-          <input type="text" id="newUsername" placeholder="Username" required>
-          <label>Password *</label>
-          <input type="password" id="newPassword" placeholder="Password" required>
-          <button type="submit" class="btn btn-primary">Add user</button>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Username *</label>
+              <input type="text" id="newUsername" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+              <label>Password *</label>
+              <input type="password" id="newPassword" placeholder="Enter password (min 4 characters)" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Add User</button>
         </form>
-        <h3>Users with access</h3>
+        
+        <h3>👥 Users with Access</h3>
         <div id="adminList"></div>
       </section>
       </div>
@@ -104,6 +115,68 @@
     </div>
   </div>
   </div>
+  
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔒 Change Password</h2>
+        <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="changePasswordForm">
+        <div class="form-group">
+          <label>Current Password *</label>
+          <input type="password" id="currentPassword" placeholder="Enter current password" required autocomplete="current-password">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>New Password *</label>
+            <input type="password" id="newPasswordChange" placeholder="Enter new password (min 4 characters)" required autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password *</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm new password" required autocomplete="new-password">
+          </div>
+        </div>
+        <p id="changePasswordMessage" class="login-error" style="display:none;"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="cancelModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Change Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // Initialize Om background
+    (function() {
+      var container = document.getElementById('om-bg');
+      if (!container) return;
+      var rows = 6;
+      var cols = 8;
+      var totalCells = rows * cols;
+      var cellWidth = 100 / cols;
+      var cellHeight = 100 / rows;
+      
+      for (var i = 0; i < totalCells; i++) {
+        var row = Math.floor(i / cols);
+        var col = i % cols;
+        var span = document.createElement('span');
+        span.textContent = '\u0950';
+        
+        var left = (col * cellWidth) + (Math.random() * cellWidth * 0.7 + cellWidth * 0.15);
+        var top = (row * cellHeight) + (Math.random() * cellHeight * 0.7 + cellHeight * 0.15);
+        
+        span.style.left = left + '%';
+        span.style.top = top + '%';
+        span.style.fontSize = (1.4 + Math.random() * 1.2) + 'rem';
+        span.style.transform = 'rotate(' + (Math.random() * 60 - 30) + 'deg)';
+        span.style.opacity = (0.12 + Math.random() * 0.06).toFixed(2);
+        span.style.animationDelay = (Math.random() * 4) + 's';
+        container.appendChild(span);
+      }
+    })();
+  </script>
   <script src="/admin.js"></script>
 </body>
 </html>
