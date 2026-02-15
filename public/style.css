@@ -12,26 +12,17 @@ html {
 :root {
   --gold: #c9a227;
   --gold-light: #e8d48b;
-  --gold-dark: #8b6914;
-  --gold-border: #6b5310;
+  --gold-dark: #a67c00;
   --orange: #d4722a;
   --maroon: #6b2d3a;
   --cream: #fdf8f0;
   --dark: #2c1810;
-  --text-brown: #3d2817;
-  --bg-parchment: #c9a962;
-  --bg-parchment-light: #d4b87a;
-  --card-inner: #e8d4a8;
-  --card-inner-light: #f0e4c8;
+  --text-brown: #4a2525;
 }
 
 body {
   font-family: 'Noto Sans', sans-serif;
-  background: #b8954a;
-  background-image:
-    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(212, 184, 122, 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 120% at 80% 100%, rgba(184, 133, 58, 0.25) 0%, transparent 50%),
-    linear-gradient(165deg, #c4a04a 0%, #b89247 25%, #a67c3a 70%, #8b6914 100%);
+  background: linear-gradient(145deg, #fff8ed 0%, #ffecd2 40%, #f5e0c8 100%);
   height: 100vh;
   max-height: 100vh;
   color: var(--dark);
@@ -50,7 +41,7 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23d4b896' stroke-opacity='0.06' stroke-width='0.5'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
 }
@@ -152,15 +143,14 @@ body::before {
   min-width: 280px;
 }
 
-/* Upcoming event cards: light golden-brown, thin border, pill-shaped */
+/* Upcoming event cards: compact, rounded, subtle lift */
 .puja-card--upcoming {
   padding: 1.25rem 1.5rem;
-  border-radius: 24px;
-  background: linear-gradient(165deg, var(--card-inner-light) 0%, var(--card-inner) 50%, #dfc98a 100%);
-  border: 1px solid var(--gold-border);
+  border-radius: 10px;
+  background: linear-gradient(160deg, #fffcf7 0%, #fef8ec 50%, #f6ecd8 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+    inset 0 0 0 1px rgba(201, 162, 39, 0.2),
+    0 4px 16px rgba(74, 37, 37, 0.08);
 }
 
 .puja-card--upcoming .puja-card-title {
@@ -195,34 +185,48 @@ body::before {
 }
 
 .puja-card--upcoming::before,
-.puja-card--upcoming::after { display: none; }
-.puja-card--upcoming .card-corner-bottom-left,
-.puja-card--upcoming .card-corner-bottom-right { display: none; }
-
-/* Featured card: ornate multi-layer border, embossed look, lighter inner */
-.puja-card {
-  position: relative;
-  background: linear-gradient(165deg, var(--card-inner-light) 0%, var(--card-inner) 30%, #dfc98a 100%);
-  padding: 1.5rem 2.25rem;
-  border-radius: 14px;
-  border: 1px solid var(--gold-border);
-  box-shadow:
-    inset 0 0 0 2px rgba(139, 105, 20, 0.4),
-    inset 0 2px 4px rgba(255, 255, 255, 0.25),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.06),
-    0 4px 0 var(--gold-border),
-    0 5px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(107, 83, 16, 0.5);
+.puja-card--upcoming::after {
+  width: 18px;
+  height: 18px;
+  top: 8px;
 }
 
-/* Decorative scroll corners (featured card only) */
+.puja-card--upcoming .card-corner-bottom-left,
+.puja-card--upcoming .card-corner-bottom-right {
+  width: 18px;
+  height: 18px;
+  bottom: 8px;
+}
+
+.puja-card--upcoming .card-corner-bottom-left {
+  left: 8px;
+}
+
+.puja-card--upcoming .card-corner-bottom-right {
+  right: 8px;
+}
+
+/* Featured card: large, rounded, ornate double border */
+.puja-card {
+  position: relative;
+  background: linear-gradient(160deg, #fffcf5 0%, #fef6e8 25%, #f8ecd8 100%);
+  padding: 1.5rem 2.25rem;
+  border: 3px double var(--gold-dark);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px rgba(201, 162, 39, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 10px 30px rgba(74, 37, 37, 0.12);
+}
+
+/* Decorative scroll corners (temple-style) */
 .puja-card::before,
 .puja-card::after {
   content: '';
   position: absolute;
-  width: 26px;
-  height: 26px;
-  border-color: var(--gold-border);
+  width: 28px;
+  height: 28px;
+  border-color: var(--gold-dark);
   border-style: solid;
   border-width: 0;
   pointer-events: none;
@@ -244,9 +248,9 @@ body::before {
 .puja-card .card-corner-bottom-left,
 .puja-card .card-corner-bottom-right {
   position: absolute;
-  width: 26px;
-  height: 26px;
-  border-color: var(--gold-border);
+  width: 28px;
+  height: 28px;
+  border-color: var(--gold-dark);
   border-style: solid;
   border-width: 0;
   bottom: 10px;
@@ -335,12 +339,12 @@ body::before {
 .puja-cards.no-events .puja-card-placeholder {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem;
-  color: #6b5310;
+  color: #888;
   text-align: center;
   padding: 3rem;
-  background: linear-gradient(165deg, var(--card-inner-light) 0%, var(--card-inner) 100%);
-  border: 1px solid var(--gold-border);
-  border-radius: 14px;
+  background: linear-gradient(145deg, #fff9f0 0%, #ffecd2 100%);
+  border: 2px dashed rgba(184, 134, 11, 0.4);
+  border-radius: 8px;
 }
 
 /* TV-optimized */
