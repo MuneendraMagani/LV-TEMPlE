@@ -1,0 +1,355 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+:root {
+  --gold: #c9a227;
+  --gold-light: #e8d48b;
+  --gold-dark: #8b6914;
+  --gold-border: #6b5310;
+  --orange: #d4722a;
+  --maroon: #6b2d3a;
+  --cream: #fdf8f0;
+  --dark: #2c1810;
+  --text-brown: #3d2817;
+  --bg-parchment: #c9a962;
+  --bg-parchment-light: #d4b87a;
+  --card-inner: #e8d4a8;
+  --card-inner-light: #f0e4c8;
+}
+
+body {
+  font-family: 'Noto Sans', sans-serif;
+  background: #b8954a;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(212, 184, 122, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 120% at 80% 100%, rgba(184, 133, 58, 0.25) 0%, transparent 50%),
+    linear-gradient(165deg, #c4a04a 0%, #b89247 25%, #a67c3a 70%, #8b6914 100%);
+  height: 100vh;
+  max-height: 100vh;
+  color: var(--dark);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Section 1: Temple Header - full width, no side spaces (like admin page) */
+.temple-header {
+  width: 100%;
+  max-width: 100%;
+  flex-shrink: 0;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(90deg, #ffecd2, #fcb69f, #ffecd2);
+}
+
+.temple-header .header-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  vertical-align: top;
+}
+
+.header-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+/* Section 2: Puja cards below header - fills remaining viewport, no scroll */
+.main-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1rem 1.5rem 1.25rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.puja-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.puja-featured {
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+
+.upcoming-events-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 700;
+  color: var(--text-brown);
+  margin: 1rem 0 0.75rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.puja-upcoming-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.puja-upcoming-track {
+  width: 100%;
+  max-width: 576px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.puja-upcoming {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  padding-bottom: 0.25rem;
+  will-change: transform;
+}
+
+.puja-upcoming .puja-card {
+  flex: 0 0 auto;
+  width: 280px;
+  min-width: 280px;
+}
+
+/* Upcoming event cards: light golden-brown, thin border, pill-shaped */
+.puja-card--upcoming {
+  padding: 1.25rem 1.5rem;
+  border-radius: 24px;
+  background: linear-gradient(165deg, var(--card-inner-light) 0%, var(--card-inner) 50%, #dfc98a 100%);
+  border: 1px solid var(--gold-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.puja-card--upcoming .puja-card-title {
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  margin-bottom: 0.6rem;
+}
+
+.puja-card--upcoming .puja-card-details-heading {
+  font-size: 0.7rem;
+  margin-bottom: 0.3rem;
+}
+
+.puja-card--upcoming .puja-card-date,
+.puja-card--upcoming .puja-card-time {
+  font-size: 0.88rem;
+  margin-bottom: 0.1rem;
+}
+
+.puja-card--upcoming .puja-card-datetime {
+  font-size: 0.88rem;
+  color: var(--text-brown);
+  line-height: 1.4;
+}
+
+.puja-card--upcoming .puja-card-detail-items {
+  margin-top: 0.4rem;
+}
+
+.puja-card--upcoming .puja-card-detail-item {
+  padding: 0.2rem 0;
+  font-size: 0.82rem;
+}
+
+.puja-card--upcoming::before,
+.puja-card--upcoming::after { display: none; }
+.puja-card--upcoming .card-corner-bottom-left,
+.puja-card--upcoming .card-corner-bottom-right { display: none; }
+
+/* Featured card: ornate multi-layer border, embossed look, lighter inner */
+.puja-card {
+  position: relative;
+  background: linear-gradient(165deg, var(--card-inner-light) 0%, var(--card-inner) 30%, #dfc98a 100%);
+  padding: 1.5rem 2.25rem;
+  border-radius: 14px;
+  border: 1px solid var(--gold-border);
+  box-shadow:
+    inset 0 0 0 2px rgba(139, 105, 20, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.25),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.06),
+    0 4px 0 var(--gold-border),
+    0 5px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(107, 83, 16, 0.5);
+}
+
+/* Decorative scroll corners (featured card only) */
+.puja-card::before,
+.puja-card::after {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-color: var(--gold-border);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.puja-card::before {
+  top: 10px;
+  left: 10px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+  border-radius: 4px 0 0 0;
+}
+.puja-card::after {
+  top: 10px;
+  right: 10px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-radius: 0 4px 0 0;
+}
+.puja-card .card-corner-bottom-left,
+.puja-card .card-corner-bottom-right {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-color: var(--gold-border);
+  border-style: solid;
+  border-width: 0;
+  bottom: 10px;
+}
+.puja-card .card-corner-bottom-left {
+  left: 10px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+  border-radius: 0 0 0 4px;
+}
+.puja-card .card-corner-bottom-right {
+  right: 10px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+  border-radius: 0 0 4px 0;
+}
+
+.puja-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--text-brown);
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.puja-card-details {
+  margin-bottom: 0;
+}
+
+.puja-card-details-heading {
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 700;
+  color: var(--text-brown);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.puja-card-date,
+.puja-card-time {
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  color: var(--text-brown);
+  margin-bottom: 0.3rem;
+}
+
+.puja-card-detail-items {
+  margin-top: 0.75rem;
+}
+
+.puja-card-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 1rem;
+  color: var(--text-brown);
+}
+
+.puja-card-detail-time {
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
+.temple-link {
+  text-align: center;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.temple-link a {
+  color: var(--maroon);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.temple-link a:hover {
+  text-decoration: underline;
+}
+
+/* No events state */
+.puja-cards.no-events .puja-card-placeholder {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: #6b5310;
+  text-align: center;
+  padding: 3rem;
+  background: linear-gradient(165deg, var(--card-inner-light) 0%, var(--card-inner) 100%);
+  border: 1px solid var(--gold-border);
+  border-radius: 14px;
+}
+
+/* TV-optimized */
+@media (min-width: 1200px) {
+  .puja-card-title {
+    font-size: 2.5rem;
+  }
+  .puja-card-date,
+  .puja-card-time {
+    font-size: 1.25rem;
+  }
+}

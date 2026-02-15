@@ -1,0 +1,9 @@
+# Environment and secrets
+.env
+
+# Dependencies
+node_modules/
+
+# Optional
+*.log
+.DS_Store

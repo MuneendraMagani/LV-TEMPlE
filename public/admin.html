@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - LV Temple</title>
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <header class="temple-header">
+    <img src="/header-banner.png" alt="Lakshmi Venkateswara Temple - Srivenkateswara Vedic Education and Training Academy" class="header-image">
+  </header>
+  <div class="admin-page-content">
+  <div class="admin-container">
+    <section id="loginSection" class="login-section login-card">
+      <h1 class="login-title">ADMIN LOGIN</h1>
+      <form id="loginForm">
+        <label>Username<span class="required">*</span></label>
+        <input type="text" id="loginUsername" placeholder="Admin username" required autocomplete="username">
+        <label>Password<span class="required">*</span></label>
+        <input type="password" id="loginPassword" placeholder="Admin password" required autocomplete="current-password">
+        <button type="submit" class="btn btn-login">Login</button>
+      </form>
+      <p id="loginError" class="login-error" style="display:none;">Invalid username or password. Try again.</p>
+      <a href="#" id="requestPassword" class="login-link">Request New password</a>
+      <p class="login-footer">Don't have an account? <a href="/" class="login-link">View TV Display</a></p>
+    </section>
+
+    <div id="adminContent" style="display:none;">
+      <header class="admin-header">
+        <div class="admin-header-left">
+          <h1>Puja Admin</h1>
+          <p class="admin-subtitle">Lakshmi Venkateswara Temple – Add & manage puja events</p>
+        </div>
+        <div class="admin-user-menu" id="adminUserMenu">
+          <button type="button" class="admin-user-trigger" id="adminUserTrigger" aria-expanded="false" aria-haspopup="true" aria-label="User menu">
+            <span class="admin-user-avatar" id="adminUserAvatar">A</span>
+            <span class="admin-user-name" id="adminUserName">Admin</span>
+            <span class="admin-user-chevron" aria-hidden="true">▼</span>
+          </button>
+          <div class="admin-user-dropdown" id="adminUserDropdown" role="menu" hidden>
+            <button type="button" id="logoutBtn" class="admin-user-dropdown-item" role="menuitem">Log out</button>
+          </div>
+        </div>
+      </header>
+      <nav class="admin-tabs" role="tablist">
+        <button type="button" class="admin-tab active" data-tab="add" role="tab" aria-selected="true">Add Puja</button>
+        <button type="button" class="admin-tab" data-tab="pujas" role="tab" aria-selected="false">Pujas</button>
+        <button type="button" class="admin-tab" data-tab="users" role="tab" aria-selected="false" id="tabUsers" style="display:none;">Manage Users</button>
+      </nav>
+      <div class="admin-tab-panels">
+      <section id="panelAdd" class="admin-tab-panel add-puja active" data-tab="add">
+        <h2>Add Puja</h2>
+        <form id="addForm">
+          <label>Title *</label>
+          <input type="text" id="title" placeholder="e.g. 2026 Mahashivaratri" required>
+          <div class="row">
+            <div class="field">
+              <label>Start Date *</label>
+              <input type="date" id="startDate" required>
+            </div>
+            <div class="field">
+              <label>Start Time</label>
+              <input type="text" id="startTime" placeholder="e.g. 15:30">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>End Date *</label>
+              <input type="date" id="endDate" required>
+            </div>
+            <div class="field">
+              <label>End Time</label>
+              <input type="text" id="endTime" placeholder="e.g. 05:30">
+            </div>
+          </div>
+          <label>Sub-events (optional)</label>
+          <p class="hint">One per line: <code>time | name</code></p>
+          <textarea id="details" rows="4" placeholder="15:30 - 15:30 | Ganesh Pooja&#10;18:00 - 19:00 | Shiva Abhishekam"></textarea>
+          <button type="submit" class="btn btn-primary">Add Puja</button>
+        </form>
+      </section>
+      <section id="panelPujas" class="admin-tab-panel puja-list" data-tab="pujas">
+        <h2>Pujas (TV Display)</h2>
+        <div id="pujaList"></div>
+      </section>
+      <section id="manageUsersSection" class="admin-tab-panel manage-users" data-tab="users">
+        <h2>Manage users</h2>
+        <p class="hint">Only super admin can add or remove people who can access this app.</p>
+        <form id="addUserForm">
+          <label>New username *</label>
+          <input type="text" id="newUsername" placeholder="Username" required>
+          <label>Password *</label>
+          <input type="password" id="newPassword" placeholder="Password" required>
+          <button type="submit" class="btn btn-primary">Add user</button>
+        </form>
+        <h3>Users with access</h3>
+        <div id="adminList"></div>
+      </section>
+      </div>
+      <p class="links">
+        <a href="/" target="_blank" rel="noopener">Open TV display in new tab</a> | <a href="https://www.lvtemple.org/" target="_blank" rel="noopener">Main website</a>
+      </p>
+    </div>
+  </div>
+  </div>
+  <script src="/admin.js"></script>
+</body>
+</html>

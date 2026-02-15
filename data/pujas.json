@@ -1,0 +1,19 @@
+{
+  "pujas": [
+    {
+      "id": "1",
+      "title": "2026 Mahashivaratri",
+      "startDate": "2026-02-15",
+      "startTime": "15:30",
+      "endDate": "2026-02-16",
+      "endTime": "05:30",
+      "details": [
+        { "time": "15:30 - 15:30", "name": "Ganesh Pooja" },
+        { "time": "18:00 - 19:00", "name": "Shiva Abhishekam" },
+        { "time": "22:00 - 05:30", "name": "Night Vigil / Jaagran" }
+      ],
+      "imageUrl": "",
+      "isActive": true
+    }
+  ]
+}
