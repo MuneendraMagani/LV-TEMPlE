@@ -106,9 +106,10 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/pujas' && req.method === 'GET') {
     try {
       const data = await db.getPujas();
+      const pujas = data.pujas || [];
       log(req, res, 200);
       res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-      res.end(JSON.stringify(data));
+      res.end(JSON.stringify({ pujas }));
     } catch (e) {
       console.error('GET /api/pujas error:', e.message);
       log(req, res, 500);

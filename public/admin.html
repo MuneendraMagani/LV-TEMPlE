@@ -63,7 +63,8 @@
             </div>
             <div class="field">
               <label>Start Time</label>
-              <input type="text" id="startTime" placeholder="e.g. 15:30">
+              <input type="text" id="startTime" placeholder="e.g. 9:00 AM">
+              <span class="field-hint">12-hour format (e.g. 9:00 AM, 3:30 PM)</span>
             </div>
           </div>
           <div class="row">
@@ -73,12 +74,13 @@
             </div>
             <div class="field">
               <label>End Time</label>
-              <input type="text" id="endTime" placeholder="e.g. 05:30">
+              <input type="text" id="endTime" placeholder="e.g. 9:30 AM">
+              <span class="field-hint">12-hour format (e.g. 9:00 AM, 3:30 PM)</span>
             </div>
           </div>
           <label>Sub-events (optional)</label>
-          <p class="hint">One per line: <code>time | name</code></p>
-          <textarea id="details" rows="4" placeholder="15:30 - 15:30 | Ganesh Pooja&#10;18:00 - 19:00 | Shiva Abhishekam"></textarea>
+          <p class="hint">One per line: <code>time | name</code>. Use 12-hour format (e.g. 9:00 AM).</p>
+          <textarea id="details" rows="4" placeholder="9:00 AM - 9:30 AM | Ganesh Pooja&#10;6:00 PM - 7:00 PM | Shiva Abhishekam"></textarea>
           <button type="submit" class="btn btn-primary">Add Puja</button>
         </form>
       </section>

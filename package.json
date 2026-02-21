@@ -8,7 +8,11 @@
     "dev": "node server.js",
     "init-db": "node scripts/init-snowflake.js"
   },
-  "keywords": ["temple", "puja", "display"],
+  "keywords": [
+    "temple",
+    "puja",
+    "display"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {

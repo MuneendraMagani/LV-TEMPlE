@@ -78,14 +78,53 @@ async function init() {
   console.log('DB: Using Snowflake.');
 }
 
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return 0;
+  const s = String(timeStr).toLowerCase().trim();
+  const m = s.match(/(\d+):?(\d*)\s*(am|pm)?/);
+  if (!m) return 0;
+  let h = parseInt(m[1], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  if (m[3] === 'pm' && h !== 12) h += 12;
+  if (m[3] === 'am' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+function toTime24(timeStr) {
+  const min = parseTimeToMinutes(timeStr);
+  const h = Math.floor(min / 60) % 24;
+  const m = min % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00';
+}
+
+function sortPujasAsc(data) {
+  const today = new Date().toISOString().slice(0, 10);
+  const list = (data.pujas || []).filter((p) => {
+    if (p.isActive === false) return false;
+    const endDate = p.endDate || p.startDate;
+    return endDate && endDate >= today;
+  });
+  const isToday = (p) => (p.startDate || '') === today;
+  const key = (p) => (p.startDate || '').replace(/-/g, '') + String(parseTimeToMinutes(p.startTime) || 0).padStart(4, '0');
+  list.sort((a, b) => {
+    if (isToday(a) && !isToday(b)) return -1;
+    if (!isToday(a) && isToday(b)) return 1;
+    return key(a).localeCompare(key(b));
+  });
+  return { pujas: list };
+}
+
 async function getPujas() {
   if (!useSnowflake()) {
-    return readPujasFile();
+    return sortPujasAsc(readPujasFile());
   }
   try {
     const rows = await runQuery(
       `SELECT ID, TITLE, START_DATE, START_TIME, END_DATE, END_TIME, DETAILS, IMAGE_URL, IS_ACTIVE
-       FROM PUJAS WHERE IS_ACTIVE = TRUE ORDER BY START_DATE DESC, START_TIME`
+       FROM PUJAS
+       WHERE IS_ACTIVE = TRUE
+         AND COALESCE(END_DATE, START_DATE) >= CURRENT_DATE()
+       ORDER BY (CASE WHEN START_DATE = CURRENT_DATE() THEN 0 ELSE 1 END), START_DATE ASC, START_TIME ASC`
     );
     const fmt = (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : (v || ''));
     const pujas = (rows || []).map((r) => ({
@@ -119,15 +158,17 @@ async function addPuja(puja) {
   const startDateStr = (puja.startDate && String(puja.startDate).trim()) || null;
   const endDateStr = (puja.endDate && String(puja.endDate).trim()) || null;
   const detailsEscaped = detailsJson.replace(/\\/g, '\\\\').replace(/'/g, "''");
+  const startTime24 = (puja.startTime && String(puja.startTime).trim()) ? toTime24(puja.startTime) : null;
+  const endTime24 = (puja.endTime && String(puja.endTime).trim()) ? toTime24(puja.endTime) : null;
   const sql = `INSERT INTO PUJAS (ID, TITLE, START_DATE, START_TIME, END_DATE, END_TIME, DETAILS, IMAGE_URL, IS_ACTIVE)
        SELECT ?, ?, TRY_TO_DATE(?, 'YYYY-MM-DD'), ?, TRY_TO_DATE(?, 'YYYY-MM-DD'), ?, PARSE_JSON('${detailsEscaped}'), ?, ?`;
   const binds = [
     id,
     puja.title || '',
     startDateStr,
-    puja.startTime || '',
+    startTime24,
     endDateStr,
-    puja.endTime || '',
+    endTime24,
     puja.imageUrl || '',
     puja.isActive !== false,
   ];
@@ -146,11 +187,12 @@ async function addPuja(puja) {
 async function deletePuja(id) {
   if (!useSnowflake()) {
     const data = readPujasFile();
-    data.pujas = data.pujas.filter((p) => p.id !== id);
+    const p = data.pujas.find((x) => x.id === id);
+    if (p) p.isActive = false;
     writePujasFile(data);
     return;
   }
-  await runQuery(`DELETE FROM PUJAS WHERE ID = ?`, [id]);
+  await runQuery(`UPDATE PUJAS SET IS_ACTIVE = FALSE WHERE ID = ?`, [id]);
 }
 
 async function verifyAdmin(username, password) {

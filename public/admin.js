@@ -185,15 +185,44 @@
       });
   });
 
+  function hasAmPm(s) {
+    if (!s || typeof s !== 'string') return true;
+    return /am|pm/i.test(s);
+  }
+
+  function normalizeAmPm(s) {
+    if (!s || typeof s !== 'string') return s;
+    return s.replace(/am(?=[^a-zA-Z]|$)/gi, 'AM').replace(/pm(?=[^a-zA-Z]|$)/gi, 'PM');
+  }
+
   document.getElementById('addForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    var startTime = document.getElementById('startTime').value.trim();
+    var endTime = document.getElementById('endTime').value.trim();
+    if (startTime && !hasAmPm(startTime)) {
+      alert('Start Time must use 12-hour format with AM/PM (e.g. 9:00 AM).');
+      return;
+    }
+    if (endTime && !hasAmPm(endTime)) {
+      alert('End Time must use 12-hour format with AM/PM (e.g. 9:30 AM).');
+      return;
+    }
     var details = parseDetails(document.getElementById('details').value);
+    for (var i = 0; i < details.length; i++) {
+      if (details[i] && details[i].time && !hasAmPm(details[i].time)) {
+        alert('Sub-events must use 12-hour format with AM/PM (e.g. 9:00 AM - 9:30 AM).');
+        return;
+      }
+      if (details[i] && details[i].time) {
+        details[i].time = normalizeAmPm(details[i].time);
+      }
+    }
     var puja = {
       title: document.getElementById('title').value.trim(),
       startDate: document.getElementById('startDate').value,
-      startTime: document.getElementById('startTime').value.trim(),
+      startTime: normalizeAmPm(startTime),
       endDate: document.getElementById('endDate').value,
-      endTime: document.getElementById('endTime').value.trim(),
+      endTime: normalizeAmPm(endTime),
       details: details,
       isActive: true
     };

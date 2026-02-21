@@ -1,63 +1,64 @@
 (function() {
   const API = '/api/pujas';
 
-  function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr + 'T12:00:00');
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[d.getMonth()] + ' ' + d.getDate();
-  }
-
-  function formatDateShort(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr + 'T12:00:00');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months[d.getMonth()] + ' ' + d.getDate();
-  }
-
-  function sortKey(puja) {
-    var d = (puja.startDate || '').replace(/-/g, '');
-    var t = (puja.startTime || '').replace(/\D/g, '').slice(0, 4) || '1200';
-    return d + t;
-  }
-
-  function hasEventEnded(puja) {
-    const now = new Date();
-    
-    // Use endDate if available, otherwise use startDate
-    const eventDate = puja.endDate || puja.startDate;
-    if (!eventDate) return false;
-    
-    // Use endTime if available, otherwise use startTime
-    const eventTime = puja.endTime || puja.startTime || '23:59';
-    
-    // Parse the date (YYYY-MM-DD format)
-    const [year, month, day] = eventDate.split('-').map(Number);
-    
-    // Parse the time (various formats: "6:30 pm", "6:30pm", "18:30")
-    let hours = 0, minutes = 0;
-    const timeStr = eventTime.toLowerCase().trim();
-    
-    if (timeStr.includes('am') || timeStr.includes('pm')) {
-      const isPM = timeStr.includes('pm');
-      const timeMatch = timeStr.match(/(\d+):?(\d*)/);
-      if (timeMatch) {
-        hours = parseInt(timeMatch[1]);
-        minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
-        if (isPM && hours !== 12) hours += 12;
-        if (!isPM && hours === 12) hours = 0;
-      }
-    } else {
-      // 24-hour format
-      const timeMatch = timeStr.match(/(\d+):?(\d*)/);
-      if (timeMatch) {
-        hours = parseInt(timeMatch[1]);
-        minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
-      }
+  function formatDateSchedule(startDateStr, endDateStr) {
+    if (!startDateStr) return '';
+    const start = new Date(startDateStr + 'T12:00:00');
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const month = months[start.getMonth()];
+    const startDay = start.getDate();
+    if (endDateStr && endDateStr !== startDateStr) {
+      const end = new Date(endDateStr + 'T12:00:00');
+      const endDay = end.getDate();
+      return startDay + '-' + endDay + ' ' + month;
     }
-    
-    const eventDateTime = new Date(year, month - 1, day, hours, minutes);
-    return now > eventDateTime;
+    return startDay + ' ' + month;
+  }
+
+  function formatTimeDisplay(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return '';
+    var m = timeStr.toLowerCase().trim().match(/(\d+):?(\d*)\s*(am|pm)?/);
+    if (!m) return '';
+    var h = parseInt(m[1], 10);
+    var min = m[2] ? parseInt(m[2], 10) : 0;
+    var suffix = 'AM';
+    if (m[3]) {
+      if (m[3] === 'pm' && h !== 12) h += 12;
+      if (m[3] === 'am' && h === 12) h = 0;
+    }
+    if (h >= 12) { suffix = 'PM'; if (h > 12) h -= 12; }
+    return (min > 0 ? h + ':' + (min < 10 ? '0' : '') + min : h) + ' ' + suffix;
+  }
+
+  function parseTimeToMinutes(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return 0;
+    var s = timeStr.toLowerCase().trim();
+    var m = s.match(/(\d+):?(\d*)\s*(am|pm)?/);
+    if (!m) return 0;
+    var h = parseInt(m[1], 10);
+    var min = m[2] ? parseInt(m[2], 10) : 0;
+    if (m[3] === 'pm' && h !== 12) h += 12;
+    if (m[3] === 'am' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+
+  function getEventStatus(puja) {
+    var now = new Date();
+    var startDate = puja.startDate;
+    if (!startDate) return 'upcoming';
+    var eventDate = puja.endDate || startDate;
+    var eventTime = puja.endTime || puja.startTime || '23:59';
+    var startTime = puja.startTime || '00:00';
+    var sy = startDate.split('-')[0], sm = startDate.split('-')[1], sd = startDate.split('-')[2];
+    var ey = eventDate.split('-')[0], em = eventDate.split('-')[1], ed = eventDate.split('-')[2];
+    var startMin = parseTimeToMinutes(startTime);
+    var endMin = parseTimeToMinutes(eventTime);
+    var startDt = new Date(parseInt(sy, 10), parseInt(sm, 10) - 1, parseInt(sd, 10), Math.floor(startMin / 60), startMin % 60);
+    var endDt = new Date(parseInt(ey, 10), parseInt(em, 10) - 1, parseInt(ed, 10), Math.floor(endMin / 60), endMin % 60);
+    if (eventDate === startDate && endMin < startMin) endDt.setDate(endDt.getDate() + 1);
+    if (now < startDt) return 'upcoming';
+    if (now > endDt) return 'completed';
+    return 'live';
   }
 
   function escapeHtml(str) {
@@ -67,126 +68,101 @@
     return div.innerHTML;
   }
 
-  function buildCard(puja, isUpcoming) {
+  function buildScheduleRow(puja, status) {
     const title = escapeHtml(puja.title || 'Event');
-    const startDate = formatDate(puja.startDate);
-    const startDateShort = formatDateShort(puja.startDate);
-    const endDate = puja.endDate && puja.endDate !== puja.startDate ? formatDate(puja.endDate) : '';
-    const endDateShort = puja.endDate && puja.endDate !== puja.startDate ? formatDateShort(puja.endDate) : '';
-    const startTime = puja.startTime || '';
-    const endTime = puja.endTime || '';
-    let dateText = startDate;
-    if (endDate) dateText += ' – ' + endDate;
-    var dateShortText = startDateShort;
-    if (endDateShort) {
-      var endDay = endDateShort.replace(/^[A-Za-z]+\s+/, '');
-      dateShortText = startDateShort + '-' + endDay;
-    }
-    let timeText = startTime;
-    if (endTime) timeText += (startTime ? ' – ' : '') + endTime;
-
-    let detailsHtml = '';
-    if (puja.details && puja.details.length > 0 && !isUpcoming) {
-      detailsHtml = '<div class="puja-card-detail-items">' +
-        puja.details.map(function(d) {
-          return '<div class="puja-card-detail-item">' +
-            '<span class="puja-card-detail-time">' + escapeHtml(d.time || '') + '</span>' +
-            '<span>' + escapeHtml(d.name || '') + '</span></div>';
-        }).join('') +
-        '</div>';
-    }
-
-    var cardClass = 'puja-card' + (isUpcoming ? ' puja-card--upcoming' : '');
-    var detailsBlock;
-    if (isUpcoming) {
-      var dateTimeLine = escapeHtml(dateShortText + (timeText ? ' | ' + timeText : ''));
-      detailsBlock = '<div class="puja-card-details">' +
-        '<div class="puja-card-details-heading">DETAILS</div>' +
-        '<div class="puja-card-datetime">' + dateTimeLine + '</div>' +
-      '</div>';
-    } else {
-      detailsBlock = '<div class="puja-card-details">' +
-        '<div class="puja-card-details-heading">DETAILS</div>' +
-        '<div class="puja-card-date"><strong>Date:</strong><span>' + escapeHtml(dateText) + '</span></div>' +
-        '<div class="puja-card-time"><strong>Time:</strong><span>' + escapeHtml(timeText) + '</span></div>' +
-        detailsHtml +
-      '</div>';
-    }
-    return '<div class="' + cardClass + '">' +
-      '<span class="card-corner-top-left" aria-hidden="true"></span>' +
-      '<span class="card-corner-bottom-left" aria-hidden="true"></span>' +
-      '<span class="card-corner-bottom-right" aria-hidden="true"></span>' +
-      '<h2 class="puja-card-title">' + title + '</h2>' +
-      detailsBlock +
+    const dateText = formatDateSchedule(puja.startDate, puja.endDate);
+    const startFormatted = formatTimeDisplay(puja.startTime);
+    const endFormatted = formatTimeDisplay(puja.endTime);
+    var timeText = startFormatted ? (startFormatted + (endFormatted ? ' - ' + endFormatted : '')) : (endFormatted || '');
+    if (!timeText) timeText = '\u2014';
+    const isLive = status === 'live';
+    const rowClass = 'schedule-row' + (isLive ? ' schedule-row--live' : '');
+    const badgeClass = 'status-badge status-badge--' + status;
+    const statusText = status === 'live' ? 'LIVE' : (status === 'completed' ? 'COMPLETED' : 'UPCOMING');
+    const badgeHtml = isLive
+      ? '<span class="' + badgeClass + '"><span class="status-dot"></span>' + statusText + '</span>'
+      : '<span class="' + badgeClass + '">' + statusText + '</span>';
+    return '<div class="' + rowClass + '">' +
+      '<div class="schedule-cell schedule-date">' + escapeHtml(dateText) + '</div>' +
+      '<div class="schedule-cell schedule-event">' + title + '</div>' +
+      '<div class="schedule-cell schedule-time">' + escapeHtml(timeText) + '</div>' +
+      '<div class="schedule-cell schedule-status">' + badgeHtml + '</div>' +
     '</div>';
   }
+
+  var ROWS_PER_PAGE = 7;
+  var PAGE_INTERVAL_MS = 10000;
+  var currentPujas = [];
+  var currentPageIndex = 0;
+  var pageIntervalId = null;
 
   function renderPujas(pujas) {
     const container = document.getElementById('pujaCards');
     if (!container) return;
 
-    if (!pujas || pujas.length === 0) {
-      container.className = 'puja-cards no-events';
-      container.innerHTML = '<div class="puja-card-placeholder">No upcoming pujas</div>';
+    currentPujas = pujas || [];
+    currentPageIndex = 0;
+    if (pageIntervalId) {
+      clearInterval(pageIntervalId);
+      pageIntervalId = null;
+    }
+
+    if (!currentPujas.length) {
+      container.className = 'schedule-section no-events';
+      container.innerHTML = '<div class="puja-placeholder">No upcoming pujas</div>';
       return;
     }
 
-    var sorted = pujas.slice().sort(function(a, b) { return sortKey(a).localeCompare(sortKey(b)); });
-    var first = sorted[0];
-    var rest = sorted.slice(1);
-
-    var html = '<div class="puja-featured">' + buildCard(first) + '</div>';
-    if (rest.length > 0) {
-      html += '<h2 class="upcoming-events-title">Upcoming Events</h2>';
-      html += '<div class="puja-upcoming-wrap"><div class="puja-upcoming-track"><div class="puja-upcoming">' + rest.map(function(p) { return buildCard(p, true); }).join('') + '</div></div></div>';
+    renderCurrentPage();
+    var totalPages = Math.ceil(currentPujas.length / ROWS_PER_PAGE);
+    if (totalPages > 1) {
+      pageIntervalId = setInterval(function() {
+        currentPageIndex = (currentPageIndex + 1) % totalPages;
+        renderCurrentPage();
+      }, PAGE_INTERVAL_MS);
     }
-
-    container.className = 'puja-cards';
-    container.innerHTML = html;
-
-    if (rest.length > 0) startUpcomingSlider(rest.length);
   }
 
-  var upcomingSliderTimer = null;
-  function startUpcomingSlider(numCards) {
-    if (numCards <= 0) return;
-    var wrap = document.querySelector('.puja-upcoming-wrap');
-    var track = document.querySelector('.puja-upcoming-track');
-    var inner = document.querySelector('.puja-upcoming');
-    if (!wrap || !track || !inner) return;
+  function renderCurrentPage() {
+    const container = document.getElementById('pujaCards');
+    if (!container || !currentPujas.length) return;
 
-    var numSlides = Math.ceil(numCards / 2);
-    if (numSlides <= 1) return;
+    var start = currentPageIndex * ROWS_PER_PAGE;
+    var pagePujas = currentPujas.slice(start, start + ROWS_PER_PAGE);
+    var rowsHtml = pagePujas.map(function(p) {
+      return buildScheduleRow(p, getEventStatus(p));
+    }).join('');
+    var html = '<h2 class="schedule-title">DAILY SCHEDULE &amp; UPCOMING SEVAS</h2>' +
+      '<div class="schedule-table-wrap">' +
+      '<div class="schedule-header">' +
+      '<div class="schedule-cell schedule-date">DATE</div>' +
+      '<div class="schedule-cell schedule-event">EVENT / SEVA</div>' +
+      '<div class="schedule-cell schedule-time">TIME</div>' +
+      '<div class="schedule-cell schedule-status">STATUS</div>' +
+      '</div>' +
+      '<div class="schedule-table">' + rowsHtml + '</div></div>';
 
-    function getSlideWidth() { return track.offsetWidth || 0; }
-    var currentSlide = 0;
-    function goToSlide(index, useTransition) {
-      currentSlide = index;
-      var slideWidth = getSlideWidth();
-      inner.style.transition = useTransition ? 'transform 0.5s ease-in-out' : 'none';
-      inner.style.transform = 'translateX(-' + (index * slideWidth) + 'px)';
-    }
-    function nextSlide() {
-      if (currentSlide < numSlides - 1) {
-        goToSlide(currentSlide + 1, true);
-      } else {
-        goToSlide(0, false);
-      }
-      upcomingSliderTimer = setTimeout(nextSlide, 5000);
-    }
+    container.className = 'schedule-section';
+    container.innerHTML = html;
+  }
 
-    if (upcomingSliderTimer) clearTimeout(upcomingSliderTimer);
-    goToSlide(0, false);
-    upcomingSliderTimer = setTimeout(nextSlide, 5000);
-    window.addEventListener('resize', function() { goToSlide(currentSlide, false); });
+  function sortPujasTodayFirst(pujas) {
+    var today = new Date().toISOString().slice(0, 10);
+    function isToday(p) { return (p.startDate || '') === today; }
+    function key(p) { return (p.startDate || '').replace(/-/g, '') + String(parseTimeToMinutes(p.startTime) || 0).padStart(4, '0'); }
+    return pujas.slice().sort(function(a, b) {
+      if (isToday(a) && !isToday(b)) return -1;
+      if (!isToday(a) && isToday(b)) return 1;
+      return key(a).localeCompare(key(b));
+    });
   }
 
   function loadPujas() {
     fetch(API)
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        const pujas = (data.pujas || []).filter(function(p) { return p.isActive !== false; });
-        renderPujas(pujas);
+        var pujas = (data.pujas || []).filter(function(p) { return p.isActive !== false; });
+        renderPujas(sortPujasTodayFirst(pujas));
       })
       .catch(function() {
         renderPujas([]);
@@ -221,27 +197,7 @@
     }
   }
 
-  function initOmCursor() {
-    var el = document.getElementById('om-cursor');
-    if (!el) return;
-    var x = 0, y = 0;
-    var tx = 0, ty = 0;
-    document.addEventListener('mousemove', function(e) {
-      x = e.clientX;
-      y = e.clientY;
-    });
-    function tick() {
-      tx += (x - tx) * 0.12;
-      ty += (y - ty) * 0.12;
-      el.style.left = tx + 'px';
-      el.style.top = ty + 'px';
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }
-
   loadPujas();
   setInterval(loadPujas, 60000);
   initOmBackground();
-  // initOmCursor(); // Removed - Om cursor follower disabled
 })();
