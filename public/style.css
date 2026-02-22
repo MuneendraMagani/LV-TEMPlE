@@ -24,6 +24,7 @@ body {
   overflow: hidden;
   position: relative;
   display: flex;
+  width: 100%;
   flex-direction: column;
   margin: 0;
   padding: 0;
@@ -55,12 +56,13 @@ body {
   50% { opacity: 0.18; }
 }
 
-/* Section 1: Temple Header - full width, no side spaces (like admin page) */
+/* Section 1: Temple Header */
 .temple-header {
   width: 100%;
   max-width: 100%;
   flex-shrink: 0;
   position: relative;
+  overflow: visible;
   margin: 0;
   padding: 0;
   background: linear-gradient(90deg, #ffd89b 0%, #fcb69f 25%, #f9a84d 50%, #fcb69f 75%, #ffd89b 100%);
@@ -68,7 +70,7 @@ body {
 
 .temple-header .header-image {
   width: 100%;
-  height: 110px;
+  height: 77px;
   object-fit: cover;
   object-position: center;
   display: block;
@@ -89,8 +91,8 @@ body {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 0.5rem 1.25rem 0.75rem;
-  max-width: 98%;
+  padding: 1rem 1rem 0.75rem;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   position: relative;
@@ -99,138 +101,253 @@ body {
   flex-direction: column;
 }
 
-/* Schedule section - table layout, no scroll */
-.schedule-section {
+/* Cards section - main + upcoming */
+.puja-cards-section {
   flex: 1;
   min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.75rem;
 }
 
-.schedule-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 700;
-  color: #3a1810;
-  text-align: center;
-  margin-bottom: 0.75rem;
-  letter-spacing: 0.05em;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(58, 24, 16, 0.25);
-  flex-shrink: 0;
-}
-
-.schedule-table-wrap {
-  flex: 1;
+.puja-main-wrap {
+  flex: 1 1 62%;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-.schedule-header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-}
-
-.schedule-table {
-  flex: 1;
-  min-height: 0;
-}
-
-.schedule-header,
-.schedule-row {
-  display: grid;
-  grid-template-columns: minmax(5rem, 1fr) minmax(8rem, 2fr) minmax(6rem, 1.2fr) minmax(5rem, 1fr);
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.65rem 1rem;
-  border-bottom: 1px solid rgba(139, 69, 19, 0.15);
-}
-
-.schedule-header {
-  font-size: 0.75rem;
+/* Shared card styling - golden border, cream bg, accents */
+.puja-card-details-bar {
+  background: linear-gradient(90deg, #fff8e1 0%, #fff3c4 50%, #fff8e1 100%);
+  color: #5d4e37;
+  font-size: 0.7rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #3a1810;
-  background: rgba(255, 249, 240, 0.6);
+  letter-spacing: 0.12em;
+  padding: 0.4rem 1rem;
+  margin: 0.75rem 0 0.6rem;
+  border-radius: 4px;
 }
 
-.schedule-row {
-  background: rgba(255, 255, 255, 0.4);
-  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
-}
-
-.schedule-row--live {
-  background: rgba(232, 210, 180, 0.7);
-  position: relative;
-}
-
-.schedule-row--live::before {
-  content: '';
+.puja-card-accent {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #6b2d3a;
-  border-radius: 0 2px 2px 0;
+  width: 24px;
+  height: 24px;
+  border-color: #b8860b;
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.7;
 }
 
-.schedule-cell {
+.puja-card-accent--tr {
+  top: 8px;
+  right: 8px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-radius: 0 6px 0 0;
+}
+
+.puja-card-accent--bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+  border-radius: 0 0 0 6px;
+}
+
+/* Main card - today's events - fill space with big text */
+.puja-main-card {
+  position: relative;
+  flex: 1;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  background: linear-gradient(145deg, #fdf8f0 0%, #faf0e1 50%, #f5e6d3 100%);
+  border: 2px solid #a67c00;
+  border-radius: 14px;
+  padding: 1.75rem 2.25rem 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.puja-main-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 700;
+  color: var(--maroon);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+
+.puja-main-items {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: clamp(0.75rem, 2.5vw, 1.5rem);
+  flex: 1;
+}
+
+.puja-main-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.puja-main-event {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 4.5vw, 2.5rem);
+  font-weight: 700;
+  color: #3a1810;
+}
+
+.puja-main-time {
+  font-size: clamp(1.15rem, 3.5vw, 1.75rem);
+  font-weight: 600;
   color: var(--text-brown);
 }
 
-.schedule-cell.schedule-event {
-  font-weight: 600;
-  color: #3a1810;
+/* Auto-adjust for 3 events */
+.puja-main-card--count-3 .puja-main-event {
+  font-size: clamp(1.3rem, 3.8vw, 2rem);
+}
+.puja-main-card--count-3 .puja-main-time {
+  font-size: clamp(1rem, 3vw, 1.4rem);
+}
+.puja-main-card--count-3 .puja-main-items {
+  gap: clamp(0.5rem, 2vw, 1rem);
 }
 
-.schedule-cell.schedule-date {
+/* Auto-adjust for 4+ events */
+.puja-main-card--count-4 .puja-main-event,
+.puja-main-card--count-5 .puja-main-event {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+}
+.puja-main-card--count-4 .puja-main-time,
+.puja-main-card--count-5 .puja-main-time {
+  font-size: clamp(0.95rem, 2.5vw, 1.25rem);
+}
+.puja-main-card--count-4 .puja-main-items,
+.puja-main-card--count-5 .puja-main-items {
+  gap: clamp(0.4rem, 1.5vw, 0.85rem);
+}
+
+.puja-info-label {
+  color: var(--text-brown);
   font-weight: 500;
 }
 
-/* Status badges */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
+.puja-info-value {
+  color: #3a1810;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.status-badge--live {
-  background: #8b4513;
-  color: #fff;
+/* Upcoming section - two cards, auto-scroll - smaller than main */
+.puja-upcoming-section {
+  flex: 1 1 38%;
+  min-height: 0;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #e74c3c;
+.puja-upcoming-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 2.5vw, 1.35rem);
+  font-weight: 700;
+  color: #3a1810;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.08em;
   flex-shrink: 0;
 }
 
-.status-badge--upcoming {
-  background: rgba(255, 249, 240, 0.9);
-  color: #4a2525;
-  border: 1px solid rgba(139, 69, 19, 0.2);
+.puja-upcoming-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
 }
 
-.status-badge--completed {
-  background: rgba(200, 200, 200, 0.5);
-  color: #666;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+.puja-upcoming-inner {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100%;
+  will-change: transform;
+}
+
+.puja-upcoming-card {
+  flex: 0 0 50%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.5rem;
+}
+
+.puja-upcoming-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #d4a017 0%, #c9a227 50%, #b8860b 100%);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(184, 134, 11, 0.4);
+  z-index: 2;
+}
+
+.puja-upcoming-card-inner {
+  position: relative;
+  background: linear-gradient(145deg, #fdf8f0 0%, #faf0e1 50%, #f5e6d3 100%);
+  border: 2px solid rgba(184, 134, 11, 0.5);
+  border-radius: 10px;
+  padding: 1.25rem 1.25rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.puja-upcoming-card-inner .puja-card-accent {
+  width: 18px;
+  height: 18px;
+}
+
+.puja-upcoming-card-inner .puja-card-accent--tr {
+  display: none;
+}
+
+.puja-upcoming-card-inner .puja-card-accent--bl {
+  bottom: 6px;
+  left: 6px;
+}
+
+.puja-upcoming-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  color: #3a1810;
+  line-height: 1.2;
+}
+
+.puja-upcoming-card-inner .puja-card-details-bar {
+  padding: 0.3rem 0.75rem;
+  margin: 0.5rem 0 0.4rem;
+  font-size: 0.65rem;
+}
+
+.puja-upcoming-info {
+  font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+  color: var(--text-brown);
+  font-weight: 500;
+  margin-top: 0.5rem;
 }
 
 .temple-link {
@@ -253,7 +370,7 @@ body {
 }
 
 /* No events state */
-.schedule-section.no-events .puja-placeholder {
+.puja-cards-section.no-events .puja-placeholder {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem;
   color: #888;
@@ -272,12 +389,6 @@ body {
   .main-content {
     padding: 0.4rem 1rem 0.6rem;
   }
-  .schedule-header,
-  .schedule-row {
-    grid-template-columns: 0.9fr 1.5fr 1fr 0.85fr;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
-  }
 }
 
 /* TV-optimized */
@@ -288,12 +399,5 @@ body {
   .main-content {
     max-width: 1200px;
     padding: 0.75rem 2rem 1rem;
-  }
-  .schedule-header,
-  .schedule-row {
-    padding: 0.85rem 1.25rem;
-  }
-  .schedule-row .schedule-cell {
-    font-size: 1.1rem;
   }
 }
