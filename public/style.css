@@ -5,8 +5,11 @@
 }
 
 html {
+  font-size: 16px;
+}
+
+html, body {
   height: 100%;
-  overflow: hidden;
 }
 
 :root {
@@ -18,16 +21,17 @@ html {
 body {
   font-family: 'Noto Sans', sans-serif;
   background: linear-gradient(135deg, #faf6f0 0%, #f5e6d3 50%, #efe4d1 100%);
-  height: 100vh;
-  max-height: 100vh;
+  min-height: 100dvh;
   color: var(--dark);
-  overflow: hidden;
+  overflow-x: hidden;
   position: relative;
   display: flex;
   width: 100%;
   flex-direction: column;
   margin: 0;
   padding: 0;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .om-bg {
@@ -397,7 +401,60 @@ body {
     height: 130px;
   }
   .main-content {
-    max-width: 1200px;
+    max-width: 1600px;
     padding: 0.75rem 2rem 1rem;
   }
+}
+
+/* TV Mode - bigger typography + wider layout */
+.tv-mode body {
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+}
+
+.tv-mode html {
+  font-size: 1.2vw;
+}
+
+.mobile-mode html {
+  font-size: 14px;
+}
+
+.tv-mode .main-content {
+  max-width: 1700px;
+  padding: 2vw 3vw;
+}
+
+.tv-mode .puja-main-event {
+  font-size: clamp(2rem, 3vw, 3.2rem);
+}
+
+.tv-mode .puja-main-time {
+  font-size: clamp(1.5rem, 2vw, 2.2rem);
+}
+
+.tv-mode .puja-upcoming-title {
+  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+}
+
+.tv-mode .puja-upcoming-info {
+  font-size: clamp(1.2rem, 1.5vw, 1.5rem);
+}
+
+/* Mobile Mode - stack layout vertically */
+.mobile-mode .puja-main-item {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.mobile-mode .puja-upcoming-inner {
+  flex-direction: column;
+}
+
+.mobile-mode .puja-upcoming-card {
+  flex: 0 0 100%;
+}
+
+.mobile-mode .main-content {
+  padding: 0.8rem;
 }

@@ -94,6 +94,9 @@
   var upcomingSliderTimer = null;
 
   function startUpcomingSlider(numCards) {
+    if (document.documentElement.classList.contains("mobile-mode")) {
+      return; // Disable auto sliding on mobile
+    }
     var container = document.getElementById('pujaUpcomingWrap');
     var inner = document.getElementById('pujaUpcomingInner');
     if (!container || !inner) return;
@@ -272,6 +275,11 @@
 
   loadPujas();
   setInterval(loadPujas, 60000);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      loadPujas();
+    }
+  });
   (function scheduleMidnightRefresh() {
     var now = new Date();
     var tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
