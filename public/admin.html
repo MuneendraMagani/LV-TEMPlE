@@ -118,6 +118,53 @@
   </div>
   </div>
   
+  <!-- Edit Puja Modal -->
+  <div id="editPujaModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>✏️ Edit Puja</h2>
+        <button type="button" class="modal-close" id="closeEditModalBtn">&times;</button>
+      </div>
+      <form id="editPujaForm">
+        <input type="hidden" id="editPujaId" value="">
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="editTitle" placeholder="e.g. 2026 Mahashivaratri" required>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Start Date *</label>
+            <input type="date" id="editStartDate" required>
+          </div>
+          <div class="field">
+            <label>Start Time</label>
+            <input type="text" id="editStartTime" placeholder="e.g. 9:00 AM">
+            <span class="field-hint">12-hour format (e.g. 9:00 AM, 3:30 PM)</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>End Date *</label>
+            <input type="date" id="editEndDate" required>
+          </div>
+          <div class="field">
+            <label>End Time</label>
+            <input type="text" id="editEndTime" placeholder="e.g. 9:30 AM">
+            <span class="field-hint">12-hour format</span>
+          </div>
+        </div>
+        <label>Sub-events (optional)</label>
+        <p class="hint">One per line: <code>time | name</code>. Use 12-hour format.</p>
+        <textarea id="editDetails" rows="4" placeholder="9:00 AM - 9:30 AM | Ganesh Pooja"></textarea>
+        <p id="editPujaMessage" class="login-error" style="display:none;"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="cancelEditModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Change Password Modal -->
   <div id="changePasswordModal" class="modal" style="display:none;">
     <div class="modal-content">

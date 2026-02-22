@@ -127,14 +127,18 @@ async function getPujas() {
        ORDER BY (CASE WHEN START_DATE = CURRENT_DATE() THEN 0 ELSE 1 END), START_DATE ASC, START_TIME ASC`
     );
     const fmt = (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : (v || ''));
+    const normDetails = (d) => {
+      const arr = Array.isArray(d) ? d : (d && typeof d === 'object' ? Object.values(d) : []);
+      return arr.map((x) => ({ time: x.time || x.TIME || '', name: x.name || x.NAME || '' }));
+    };
     const pujas = (rows || []).map((r) => ({
       id: String(r.ID),
       title: r.TITLE,
       startDate: fmt(r.START_DATE),
-      startTime: r.START_TIME || '',
+      startTime: r.START_TIME != null ? String(r.START_TIME) : '',
       endDate: fmt(r.END_DATE),
-      endTime: r.END_TIME || '',
-      details: r.DETAILS != null ? (Array.isArray(r.DETAILS) ? r.DETAILS : []) : [],
+      endTime: r.END_TIME != null ? String(r.END_TIME) : '',
+      details: normDetails(r.DETAILS),
       imageUrl: r.IMAGE_URL || '',
       isActive: r.IS_ACTIVE !== false,
     }));
@@ -182,6 +186,52 @@ async function addPuja(puja) {
     throw e;
   }
   return { ...puja, id };
+}
+
+async function updatePuja(id, puja) {
+  const idStr = String(id || '').trim();
+  if (!idStr) throw new Error('Puja ID required');
+  if (!useSnowflake()) {
+    const data = readPujasFile();
+    const idx = data.pujas.findIndex((x) => String(x.id) === idStr);
+    if (idx < 0) throw new Error('Puja not found');
+    const existing = data.pujas[idx];
+    data.pujas[idx] = {
+      ...existing,
+      title: puja.title || existing.title,
+      startDate: puja.startDate || existing.startDate,
+      startTime: puja.startTime != null ? puja.startTime : existing.startTime,
+      endDate: puja.endDate || existing.endDate,
+      endTime: puja.endTime != null ? puja.endTime : existing.endTime,
+      details: Array.isArray(puja.details) ? puja.details : (existing.details || []),
+      imageUrl: puja.imageUrl != null ? puja.imageUrl : existing.imageUrl,
+    };
+    writePujasFile(data);
+    return { ...data.pujas[idx], id: idStr };
+  }
+  const detailsJson = JSON.stringify(puja.details || []);
+  const startDateStr = (puja.startDate && String(puja.startDate).trim()) || null;
+  const endDateStr = (puja.endDate && String(puja.endDate).trim()) || null;
+  const startTime24 = (puja.startTime && String(puja.startTime).trim()) ? toTime24(puja.startTime) : null;
+  const endTime24 = (puja.endTime && String(puja.endTime).trim()) ? toTime24(puja.endTime) : null;
+  const sql = `UPDATE PUJAS SET TITLE = ?, START_DATE = TRY_TO_DATE(?, 'YYYY-MM-DD'), START_TIME = ?,
+    END_DATE = TRY_TO_DATE(?, 'YYYY-MM-DD'), END_TIME = ?, DETAILS = PARSE_JSON(?)
+    WHERE ID = ? AND IS_ACTIVE = TRUE`;
+  try {
+    await runQuery(sql, [
+      puja.title || '',
+      startDateStr,
+      startTime24,
+      endDateStr,
+      endTime24,
+      detailsJson,
+      idStr,
+    ]);
+  } catch (e) {
+    console.error('updatePuja Snowflake error:', e.message, e.code, e.cause || '');
+    throw e;
+  }
+  return { ...puja, id: idStr };
 }
 
 async function deletePuja(id) {
@@ -336,6 +386,7 @@ module.exports = {
   init,
   getPujas,
   addPuja,
+  updatePuja,
   deletePuja,
   verifyAdmin,
   getAdmins,

@@ -121,26 +121,79 @@
     }).filter(Boolean);
   }
 
+  var pujasCache = [];
   function loadPujas() {
     fetch(API)
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var list = document.getElementById('pujaList');
-        var pujas = data.pujas || [];
-        if (pujas.length === 0) {
+        pujasCache = data.pujas || [];
+        if (pujasCache.length === 0) {
           list.innerHTML = '<p style="color:#888;">No pujas yet. Add one above.</p>';
           return;
         }
-        list.innerHTML = pujas.map(function(p) {
+        list.innerHTML = pujasCache.map(function(p) {
           var start = (p.startDate || '') + ' ' + (p.startTime || '');
           var end = (p.endDate || '') + ' ' + (p.endTime || '');
-          return '<div class="puja-card"><div class="puja-card-info"><h3>' + (p.title || 'Untitled') + '</h3><p>' + start + ' – ' + end + '</p></div><button type="button" class="btn btn-danger" data-id="' + p.id + '">Delete</button></div>';
+          return '<div class="puja-card"><div class="puja-card-info"><h3>' + escapeHtml(p.title || 'Untitled') + '</h3><p>' + escapeHtml(start) + ' – ' + escapeHtml(end) + '</p></div><button type="button" class="btn btn-edit" data-id="' + escapeHtml(String(p.id)) + '">Edit</button><button type="button" class="btn btn-danger" data-id="' + escapeHtml(String(p.id)) + '">Delete</button></div>';
         }).join('');
+        list.querySelectorAll('.btn-edit').forEach(function(btn) {
+          btn.addEventListener('click', openEditPuja);
+        });
         list.querySelectorAll('.btn-danger').forEach(function(btn) {
           btn.addEventListener('click', deletePuja);
         });
       })
       .catch(function() { document.getElementById('pujaList').innerHTML = '<p style="color:#c0392b;">Error loading pujas.</p>'; });
+  }
+
+  function toTime12(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return timeStr || '';
+    var s = timeStr.trim();
+    if (/am|pm/i.test(s)) return s;
+    var m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return s;
+    var h = parseInt(m[1], 10);
+    var min = m[2] || '00';
+    var hour12 = h % 12 || 12;
+    var ampm = h < 12 ? 'AM' : 'PM';
+    return hour12 + ':' + min + ' ' + ampm;
+  }
+
+  function formatDetailsForTextarea(details) {
+    if (!Array.isArray(details)) return '';
+    return details.map(function(d) {
+      var t = (d.time || '').trim();
+      if (t && !/am|pm/i.test(t)) {
+        var parts = t.split(/\s*-\s*/);
+        t = parts.map(toTime12).join(' - ');
+      }
+      return t + (t && d.name ? ' | ' : '') + (d.name || '');
+    }).join('\n');
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    var div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+  }
+
+  function openEditPuja(e) {
+    var id = e.target.dataset.id;
+    if (!id) return;
+    var p = pujasCache.find(function(x) { return String(x.id) === String(id); });
+    if (!p) return;
+    document.getElementById('editPujaId').value = p.id || '';
+    document.getElementById('editTitle').value = p.title || '';
+    document.getElementById('editStartDate').value = (p.startDate || '').slice(0, 10);
+    document.getElementById('editEndDate').value = (p.endDate || '').slice(0, 10);
+    document.getElementById('editStartTime').value = toTime12(p.startTime || '');
+    document.getElementById('editEndTime').value = toTime12(p.endTime || '');
+    document.getElementById('editDetails').value = formatDetailsForTextarea(p.details);
+    document.getElementById('editPujaMessage').style.display = 'none';
+    document.getElementById('editPujaModal').style.display = 'flex';
+    document.getElementById('editTitle').focus();
   }
 
   function deletePuja(e) {
@@ -264,6 +317,73 @@
         } else return r.json().then(function(d) { alert(d.error || 'Failed'); });
       })
       .catch(function() { alert('Failed to add user.'); });
+  });
+
+  document.getElementById('closeEditModalBtn').addEventListener('click', function() {
+    document.getElementById('editPujaModal').style.display = 'none';
+    document.getElementById('editPujaForm').reset();
+    document.getElementById('editPujaMessage').style.display = 'none';
+  });
+  document.getElementById('cancelEditModalBtn').addEventListener('click', function() {
+    document.getElementById('editPujaModal').style.display = 'none';
+    document.getElementById('editPujaForm').reset();
+    document.getElementById('editPujaMessage').style.display = 'none';
+  });
+  document.getElementById('editPujaModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      document.getElementById('editPujaForm').reset();
+      document.getElementById('editPujaMessage').style.display = 'none';
+    }
+  });
+  document.getElementById('editPujaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var id = document.getElementById('editPujaId').value;
+    if (!id) return;
+    var startTime = document.getElementById('editStartTime').value.trim();
+    var endTime = document.getElementById('editEndTime').value.trim();
+    if (startTime && !hasAmPm(startTime)) {
+      document.getElementById('editPujaMessage').textContent = 'Start Time must use 12-hour format with AM/PM (e.g. 9:00 AM).';
+      document.getElementById('editPujaMessage').style.display = 'block';
+      return;
+    }
+    if (endTime && !hasAmPm(endTime)) {
+      document.getElementById('editPujaMessage').textContent = 'End Time must use 12-hour format with AM/PM (e.g. 9:30 AM).';
+      document.getElementById('editPujaMessage').style.display = 'block';
+      return;
+    }
+    var details = parseDetails(document.getElementById('editDetails').value);
+    for (var i = 0; i < details.length; i++) {
+      if (details[i] && details[i].time && !hasAmPm(details[i].time)) {
+        document.getElementById('editPujaMessage').textContent = 'Sub-events must use 12-hour format with AM/PM.';
+        document.getElementById('editPujaMessage').style.display = 'block';
+        return;
+      }
+      if (details[i] && details[i].time) details[i].time = normalizeAmPm(details[i].time);
+    }
+    var puja = {
+      _update: true,
+      id: id,
+      title: document.getElementById('editTitle').value.trim(),
+      startDate: document.getElementById('editStartDate').value,
+      startTime: normalizeAmPm(startTime),
+      endDate: document.getElementById('editEndDate').value,
+      endTime: normalizeAmPm(endTime),
+      details: details
+    };
+    fetch(API, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()), body: JSON.stringify(puja) })
+      .then(function(r) {
+        if (r.status === 401) { showLogin(); document.getElementById('editPujaModal').style.display = 'none'; return; }
+        if (r.ok) { document.getElementById('editPujaModal').style.display = 'none'; loadPujas(); return; }
+        return r.json().catch(function() { return {}; }).then(function(d) {
+          document.getElementById('editPujaMessage').textContent = d.error || ('Update failed (status ' + r.status + ')');
+          document.getElementById('editPujaMessage').style.display = 'block';
+        });
+      })
+      .catch(function(err) {
+        document.getElementById('editPujaMessage').textContent = 'Update failed. ' + (err.message || '');
+        document.getElementById('editPujaMessage').style.display = 'block';
+      });
   });
 
   document.getElementById('changePasswordBtn').addEventListener('click', function() {

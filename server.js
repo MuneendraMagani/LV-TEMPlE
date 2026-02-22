@@ -74,8 +74,8 @@ function log(req, res, status) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://localhost:${PORT}`);
-  let pathname = url.pathname.replace(/\/+$/, '') || '/';
+  const url = new URL(req.url || '/', `http://localhost:${PORT}`);
+  let pathname = (url.pathname || '/').replace(/\/+/g, '/').replace(/\/+$/, '') || '/';
 
   // API: POST login
   if (pathname === '/api/login' && req.method === 'POST') {
@@ -118,7 +118,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // API: POST add puja (admin only)
+  // API: POST add or update puja (admin only) - same URL as add; include id in body for update
   if (pathname === '/api/pujas' && req.method === 'POST') {
     if (!isAuthenticated(req)) {
       sendJson(res, 401, { error: 'Login required' });
@@ -126,11 +126,20 @@ const server = http.createServer(async (req, res) => {
     }
     try {
       const puja = await parseBody(req);
-      const created = await db.addPuja(puja);
-      log(req, res, 201);
-      sendJson(res, 201, created);
+      const isUpdate = puja && (puja._update === true || puja._action === 'update');
+      const id = puja && (puja.id || puja._id);
+      if (isUpdate && id != null && String(id).trim() !== '') {
+        const { id: _id, _update, _action, ...rest } = puja;
+        const updated = await db.updatePuja(String(id).trim(), rest);
+        log(req, res, 200);
+        sendJson(res, 200, { ...updated, id: String(id) });
+      } else {
+        const created = await db.addPuja(puja);
+        log(req, res, 201);
+        sendJson(res, 201, created);
+      }
     } catch (e) {
-      console.error('POST /api/pujas (add puja) error:', e.message);
+      console.error('POST /api/pujas error:', e.message);
       log(req, res, 400);
       sendJson(res, 400, { error: e.message || 'Invalid request' });
     }
@@ -236,6 +245,13 @@ const server = http.createServer(async (req, res) => {
       console.error('Change password error:', e);
       sendJson(res, 500, { error: e.message || 'Failed to change password' });
     }
+    return;
+  }
+
+  // API 404 - any /api/* that didn't match above
+  if (pathname.startsWith('/api/')) {
+    console.log('API 404:', req.method, pathname);
+    sendJson(res, 404, { error: 'Not found', path: pathname, method: req.method });
     return;
   }
 
