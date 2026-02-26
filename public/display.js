@@ -4,7 +4,7 @@
   function formatDayName(dateStr) {
     if (!dateStr) return '';
     var d = new Date(dateStr + 'T12:00:00');
-    var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return days[d.getDay()];
   }
 
@@ -47,6 +47,15 @@
     if (m[3] === 'pm' && h !== 12) h += 12;
     if (m[3] === 'am' && h === 12) h = 0;
     return h * 60 + min;
+  }
+
+  function toDate(s) {
+    if (!s) return null;
+    var p = s.split('-');
+    return p.length === 3 ? new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)) : null;
+  }
+  function toStr(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
   function getEventStatus(puja) {
@@ -157,7 +166,29 @@
       return start && end && start <= today && end >= today;
     }
     var todayEvents = sorted.filter(isEventToday);
-    var upcomingPujas = sorted.filter(function(p) { return !isEventToday(p) && getEventStatus(p) === 'upcoming'; });
+
+    var tomorrow = toStr(new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1));
+    var weekEnd = toStr(new Date(n.getFullYear(), n.getMonth(), n.getDate() + 6));
+    var upcomingItems = [];
+    sorted.forEach(function(p) {
+      var start = p.startDate || '', end = p.endDate || p.startDate || '';
+      if (!start || end < today) return;
+      if (start === end) {
+        if (start > today && start <= weekEnd) upcomingItems.push({ puja: p, displayDate: start });
+        return;
+      }
+      var first = start > tomorrow ? start : tomorrow;
+      var endCapped = end > weekEnd ? weekEnd : end;
+      if (first > endCapped) return;
+      var d = toDate(first), endD = toDate(endCapped);
+      if (!d || !endD) return;
+      for (; d <= endD; d.setDate(d.getDate() + 1))
+        upcomingItems.push({ puja: p, displayDate: toStr(d) });
+    });
+    upcomingItems.sort(function(a, b) {
+      var c = a.displayDate.localeCompare(b.displayDate);
+      return c !== 0 ? c : (parseTimeToMinutes(a.puja.startTime) || 0) - (parseTimeToMinutes(b.puja.startTime) || 0);
+    });
 
     var mainHtml = '';
     if (todayEvents.length > 0) {
@@ -168,8 +199,8 @@
         var timeText = startFormatted ? (startFormatted + (endFormatted ? ' - ' + endFormatted : '')) : (endFormatted || '');
         if (!timeText) timeText = '\u2014';
         return '<div class="puja-main-item">' +
-          '<span class="puja-main-event">' + title + '</span>' +
           '<span class="puja-main-time">' + escapeHtml(timeText) + '</span>' +
+          '<span class="puja-main-event">' + title + '</span>' +
           '</div>';
       }).join('');
       var countClass = 'puja-main-card--count-' + Math.min(todayEvents.length, 5);
@@ -189,15 +220,17 @@
         '<div class="puja-card-accent puja-card-accent--tr"></div>' +
         '<div class="puja-card-accent puja-card-accent--bl"></div>' +
         '<div class="puja-main-items"><div class="puja-main-item">' +
-        '<span class="puja-main-event">No events today</span>' +
         '<span class="puja-main-time">—</span>' +
+        '<span class="puja-main-event">No events today</span>' +
         '</div></div></div>';
     }
 
-    var upcomingCardsHtml = upcomingPujas.map(function(p) {
+    var upcomingCardsHtml = upcomingItems.map(function(item) {
+      var p = item.puja;
+      var displayDate = item.displayDate;
       var title = escapeHtml(p.title || 'Event');
-      var dayName = formatDayName(p.startDate);
-      var dateText = formatDateSchedule(p.startDate, p.endDate);
+      var dayName = formatDayName(displayDate);
+      var dateText = formatDateSchedule(displayDate, displayDate);
       var startFormatted = formatTimeDisplay(p.startTime);
       var endFormatted = formatTimeDisplay(p.endTime);
       var timeText = startFormatted ? (startFormatted + (endFormatted ? ' - ' + endFormatted : '')) : (endFormatted || '');
@@ -209,13 +242,15 @@
         '<span class="puja-upcoming-badge">' + dayDateBadge + '</span>' +
         '<div class="puja-card-accent puja-card-accent--tr"></div>' +
         '<div class="puja-card-accent puja-card-accent--bl"></div>' +
-        '<div class="puja-upcoming-title">' + title + '</div>' +
-        '<div class="puja-upcoming-info">' + dateTimeText + '</div>' +
+        '<div class="puja-upcoming-row">' +
+        '<span class="puja-upcoming-info">' + dateTimeText + '</span>' +
+        '<span class="puja-upcoming-title">' + title + '</span>' +
+        '</div>' +
         '</div></div>';
     }).join('');
 
     var upcomingHtml = '';
-    if (upcomingPujas.length > 0) {
+    if (upcomingItems.length > 0) {
       upcomingHtml = '<div class="puja-upcoming-section">' +
         '<h3 class="puja-upcoming-heading">UPCOMING SEVAS</h3>' +
         '<div class="puja-upcoming-wrap" id="pujaUpcomingWrap">' +
@@ -226,9 +261,9 @@
     container.className = 'puja-cards-section';
     container.innerHTML = '<div class="puja-main-wrap">' + mainHtml + '</div>' + upcomingHtml;
 
-    if (upcomingPujas.length > 0) {
+    if (upcomingItems.length > 0) {
       setTimeout(function() {
-        startUpcomingSlider(upcomingPujas.length);
+        startUpcomingSlider(upcomingItems.length);
       }, 50);
     }
   }

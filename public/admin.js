@@ -179,17 +179,23 @@
     return div.innerHTML;
   }
 
+  function emptyIfNull(v) {
+    if (v == null || v === '') return '';
+    var s = String(v).trim();
+    return (s.toLowerCase() === 'null' || s === '') ? '' : v;
+  }
+
   function openEditPuja(e) {
     var id = e.target.dataset.id;
     if (!id) return;
     var p = pujasCache.find(function(x) { return String(x.id) === String(id); });
     if (!p) return;
-    document.getElementById('editPujaId').value = p.id || '';
-    document.getElementById('editTitle').value = p.title || '';
-    document.getElementById('editStartDate').value = (p.startDate || '').slice(0, 10);
-    document.getElementById('editEndDate').value = (p.endDate || '').slice(0, 10);
-    document.getElementById('editStartTime').value = toTime12(p.startTime || '');
-    document.getElementById('editEndTime').value = toTime12(p.endTime || '');
+    document.getElementById('editPujaId').value = emptyIfNull(p.id);
+    document.getElementById('editTitle').value = emptyIfNull(p.title);
+    document.getElementById('editStartDate').value = (emptyIfNull(p.startDate) || '').slice(0, 10);
+    document.getElementById('editEndDate').value = (emptyIfNull(p.endDate) || '').slice(0, 10);
+    document.getElementById('editStartTime').value = toTime12(emptyIfNull(p.startTime) || '');
+    document.getElementById('editEndTime').value = toTime12(emptyIfNull(p.endTime) || '');
     document.getElementById('editDetails').value = formatDetailsForTextarea(p.details);
     document.getElementById('editPujaMessage').style.display = 'none';
     document.getElementById('editPujaModal').style.display = 'flex';

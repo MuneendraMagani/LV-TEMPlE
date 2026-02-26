@@ -97,12 +97,20 @@ function toTime24(timeStr) {
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00';
 }
 
+function oneWeekLater(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + 6);
+  return d.toISOString().slice(0, 10);
+}
+
 function sortPujasAsc(data) {
   const today = new Date().toISOString().slice(0, 10);
+  const weekEnd = oneWeekLater(today);
   const list = (data.pujas || []).filter((p) => {
     if (p.isActive === false) return false;
+    const startDate = p.startDate || '';
     const endDate = p.endDate || p.startDate;
-    return endDate && endDate >= today;
+    return endDate && endDate >= today && startDate && startDate <= weekEnd;
   });
   const isToday = (p) => (p.startDate || '') === today;
   const key = (p) => (p.startDate || '').replace(/-/g, '') + String(parseTimeToMinutes(p.startTime) || 0).padStart(4, '0');
@@ -124,6 +132,7 @@ async function getPujas() {
        FROM PUJAS
        WHERE IS_ACTIVE = TRUE
          AND COALESCE(END_DATE, START_DATE) >= CURRENT_DATE()
+         AND START_DATE <= DATEADD(day, 6, CURRENT_DATE())
        ORDER BY (CASE WHEN START_DATE = CURRENT_DATE() THEN 0 ELSE 1 END), START_DATE ASC, START_TIME ASC`
     );
     const fmt = (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : (v || ''));
