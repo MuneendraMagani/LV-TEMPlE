@@ -1,5 +1,5 @@
 /**
- * Creates Snowflake tables (PUJAS, ADMINS) and seeds one admin from env.
+ * Creates Snowflake tables (POOJA, ADMINS) and seeds one admin from env.
  * Run once after setting Snowflake env vars: npm run init-db
  */
 
@@ -41,9 +41,9 @@ async function main() {
     conn.connect((err) => (err ? reject(err) : resolve()));
   });
 
-  console.log('Creating PUJAS table...');
+  console.log('Creating POOJA table...');
   await run(conn, `
-    CREATE TABLE IF NOT EXISTS PUJAS (
+    CREATE TABLE IF NOT EXISTS POOJA (
       ID VARCHAR(64) PRIMARY KEY,
       TITLE VARCHAR(500),
       START_DATE DATE,

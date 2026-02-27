@@ -82,7 +82,7 @@ https://YOUR_USERNAME-lv-temple-display.hf.space
 
 ### Option 1: JSON Files (Easiest)
 - Don't set Snowflake secrets
-- App uses `data/pujas.json` and `data/admins.json`
+- App uses `data/poojas.json` and `data/admins.json`
 - ⚠️ Data may reset on Space restarts
 
 ### Option 2: Snowflake Database
@@ -159,7 +159,7 @@ http://localhost:7860
 
 ✅ TV Display with auto-refresh
 ✅ Admin panel with authentication
-✅ Add/Edit/Delete pujas
+✅ Add/Edit/Delete poojas
 ✅ User management (for super admins)
 ✅ Change password feature
 ✅ Responsive design (mobile, tablet, TV)

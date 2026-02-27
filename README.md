@@ -10,7 +10,7 @@ pinned: false
 
 # 🕉️ LV Temple Display System
 
-A beautiful digital display system for temple events and pujas, featuring:
+A beautiful digital display system for temple events and poojas, featuring:
 
 - **TV Display Mode**: Large screen display with auto-rotating upcoming events
 - **Admin Panel**: Secure interface for managing events and users

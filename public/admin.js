@@ -1,10 +1,10 @@
 (function() {
-  const API = '/api/pujas';
+  const API = '/api/poojas';
   const LOGIN_API = '/api/login';
   const ADMINS_API = '/api/admins';
-  const TOKEN_KEY = 'puja_admin_token';
-  const ROLE_KEY = 'puja_admin_role';
-  const USERNAME_KEY = 'puja_admin_username';
+  const TOKEN_KEY = 'pooja_admin_token';
+  const ROLE_KEY = 'pooja_admin_role';
+  const USERNAME_KEY = 'pooja_admin_username';
 
   function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
   function setToken(token) { sessionStorage.setItem(TOKEN_KEY, token); }
@@ -30,7 +30,7 @@
     document.getElementById('loginError').style.display = 'none';
     document.querySelector('.admin-container').classList.add('logged-in');
     switchTab('add');
-    loadPujas();
+    loadPoojas();
     var name = getUsername() || 'Admin';
     var nameEl = document.getElementById('adminUserName');
     var avatarEl = document.getElementById('adminUserAvatar');
@@ -66,6 +66,18 @@
     var isOpen = !dropdown || !dropdown.hasAttribute('hidden');
     if (isOpen) closeUserDropdown();
     else openUserDropdown();
+  }
+
+  function closeEditPoojaModal() {
+    document.getElementById('editPoojaModal').style.display = 'none';
+    document.getElementById('editPoojaForm').reset();
+    document.getElementById('editPoojaMessage').style.display = 'none';
+  }
+
+  function closeChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordMessage').style.display = 'none';
   }
 
   function switchTab(tabId) {
@@ -121,30 +133,53 @@
     }).filter(Boolean);
   }
 
-  var pujasCache = [];
-  function loadPujas() {
+  var poojasCache = [];
+  function loadPoojas() {
+    var tableWrap = document.querySelector('.pooja-table-wrap');
+    var tbody = document.getElementById('poojaList');
+    var emptyEl = document.getElementById('poojaListEmpty');
+    var errorEl = document.getElementById('poojaListError');
+    if (!tbody) return;
     fetch(API)
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        var list = document.getElementById('pujaList');
-        pujasCache = data.pujas || [];
-        if (pujasCache.length === 0) {
-          list.innerHTML = '<p style="color:#888;">No pujas yet. Add one above.</p>';
+        poojasCache = data.poojas || [];
+        if (tableWrap) tableWrap.style.display = poojasCache.length > 0 ? '' : 'none';
+        if (emptyEl) emptyEl.style.display = poojasCache.length === 0 ? 'block' : 'none';
+        if (errorEl) errorEl.style.display = 'none';
+        if (poojasCache.length === 0) {
+          tbody.innerHTML = '';
           return;
         }
-        list.innerHTML = pujasCache.map(function(p) {
-          var start = (p.startDate || '') + ' ' + (p.startTime || '');
-          var end = (p.endDate || '') + ' ' + (p.endTime || '');
-          return '<div class="puja-card"><div class="puja-card-info"><h3>' + escapeHtml(p.title || 'Untitled') + '</h3><p>' + escapeHtml(start) + ' – ' + escapeHtml(end) + '</p></div><button type="button" class="btn btn-edit" data-id="' + escapeHtml(String(p.id)) + '">Edit</button><button type="button" class="btn btn-danger" data-id="' + escapeHtml(String(p.id)) + '">Delete</button></div>';
+        tbody.innerHTML = poojasCache.map(function(p) {
+          var startTime = emptyIfNull(p.startTime);
+          var endTime = emptyIfNull(p.endTime);
+          var startTimeDisp = startTime ? toTime12(startTime) : '—';
+          var endTimeDisp = endTime ? toTime12(endTime) : '—';
+          return '<tr>' +
+            '<td class="pooja-title">' + escapeHtml(p.title || 'Untitled') + '</td>' +
+            '<td class="pooja-date">' + escapeHtml(formatDateDisplay(p.startDate)) + '</td>' +
+            '<td class="pooja-date">' + escapeHtml(formatDateDisplay(p.endDate)) + '</td>' +
+            '<td class="pooja-time">' + escapeHtml(startTimeDisp) + '</td>' +
+            '<td class="pooja-time">' + escapeHtml(endTimeDisp) + '</td>' +
+            '<td class="pooja-actions">' +
+            '<button type="button" class="btn btn-edit" data-id="' + escapeHtml(String(p.id)) + '">Edit</button>' +
+            '<button type="button" class="btn btn-danger" data-id="' + escapeHtml(String(p.id)) + '">Delete</button>' +
+            '</td></tr>';
         }).join('');
-        list.querySelectorAll('.btn-edit').forEach(function(btn) {
-          btn.addEventListener('click', openEditPuja);
+        tbody.querySelectorAll('.btn-edit').forEach(function(btn) {
+          btn.addEventListener('click', openEditPooja);
         });
-        list.querySelectorAll('.btn-danger').forEach(function(btn) {
-          btn.addEventListener('click', deletePuja);
+        tbody.querySelectorAll('.btn-danger').forEach(function(btn) {
+          btn.addEventListener('click', deletePooja);
         });
       })
-      .catch(function() { document.getElementById('pujaList').innerHTML = '<p style="color:#c0392b;">Error loading pujas.</p>'; });
+      .catch(function() {
+        if (tableWrap) tableWrap.style.display = 'none';
+        if (emptyEl) emptyEl.style.display = 'none';
+        if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = 'Error loading poojas.'; }
+        tbody.innerHTML = '';
+      });
   }
 
   function toTime12(timeStr) {
@@ -158,6 +193,20 @@
     var hour12 = h % 12 || 12;
     var ampm = h < 12 ? 'AM' : 'PM';
     return hour12 + ':' + min + ' ' + ampm;
+  }
+
+  function formatDateDisplay(dateStr) {
+    if (!dateStr || String(dateStr).toLowerCase() === 'null') return '—';
+    var s = String(dateStr).trim();
+    if (!s) return '—';
+    var parts = s.split(/[-/]/);
+    if (parts.length < 3) return s;
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var y = parts[0];
+    var m = parseInt(parts[1], 10) - 1;
+    var d = parts[2];
+    if (isNaN(m) || m < 0 || m > 11) return s;
+    return months[m] + ' ' + d + ', ' + y;
   }
 
   function formatDetailsForTextarea(details) {
@@ -185,28 +234,28 @@
     return (s.toLowerCase() === 'null' || s === '') ? '' : v;
   }
 
-  function openEditPuja(e) {
+  function openEditPooja(e) {
     var id = e.target.dataset.id;
     if (!id) return;
-    var p = pujasCache.find(function(x) { return String(x.id) === String(id); });
+    var p = poojasCache.find(function(x) { return String(x.id) === String(id); });
     if (!p) return;
-    document.getElementById('editPujaId').value = emptyIfNull(p.id);
+    document.getElementById('editPoojaId').value = emptyIfNull(p.id);
     document.getElementById('editTitle').value = emptyIfNull(p.title);
     document.getElementById('editStartDate').value = (emptyIfNull(p.startDate) || '').slice(0, 10);
     document.getElementById('editEndDate').value = (emptyIfNull(p.endDate) || '').slice(0, 10);
     document.getElementById('editStartTime').value = toTime12(emptyIfNull(p.startTime) || '');
     document.getElementById('editEndTime').value = toTime12(emptyIfNull(p.endTime) || '');
     document.getElementById('editDetails').value = formatDetailsForTextarea(p.details);
-    document.getElementById('editPujaMessage').style.display = 'none';
-    document.getElementById('editPujaModal').style.display = 'flex';
+    document.getElementById('editPoojaMessage').style.display = 'none';
+    document.getElementById('editPoojaModal').style.display = 'flex';
     document.getElementById('editTitle').focus();
   }
 
-  function deletePuja(e) {
+  function deletePooja(e) {
     var id = e.target.dataset.id;
-    if (!id || !confirm('Delete this puja?')) return;
+    if (!id || !confirm('Delete this pooja?')) return;
     fetch(API + '/' + id, { method: 'DELETE', headers: authHeaders() })
-      .then(function(r) { if (r.status === 401) { showLogin(); return; } if (r.ok) loadPujas(); else alert('Delete failed.'); })
+      .then(function(r) { if (r.status === 401) { showLogin(); return; } if (r.ok) loadPoojas(); else alert('Delete failed.'); })
       .catch(function() { alert('Delete failed.'); });
   }
 
@@ -276,7 +325,7 @@
         details[i].time = normalizeAmPm(details[i].time);
       }
     }
-    var puja = {
+    var pooja = {
       title: document.getElementById('title').value.trim(),
       startDate: document.getElementById('startDate').value,
       startTime: normalizeAmPm(startTime),
@@ -285,9 +334,9 @@
       details: details,
       isActive: true
     };
-    fetch(API, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()), body: JSON.stringify(puja) })
-      .then(function(r) { if (r.status === 401) { showLogin(); return; } if (r.ok) { document.getElementById('addForm').reset(); loadPujas(); } else throw new Error(); })
-      .catch(function() { alert('Could not add puja.'); });
+    fetch(API, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()), body: JSON.stringify(pooja) })
+      .then(function(r) { if (r.status === 401) { showLogin(); return; } if (r.ok) { document.getElementById('addForm').reset(); loadPoojas(); } else throw new Error(); })
+      .catch(function() { alert('Could not add pooja.'); });
   });
 
   document.getElementById('logoutBtn').addEventListener('click', function() {
@@ -325,49 +374,37 @@
       .catch(function() { alert('Failed to add user.'); });
   });
 
-  document.getElementById('closeEditModalBtn').addEventListener('click', function() {
-    document.getElementById('editPujaModal').style.display = 'none';
-    document.getElementById('editPujaForm').reset();
-    document.getElementById('editPujaMessage').style.display = 'none';
+  document.getElementById('closeEditModalBtn').addEventListener('click', closeEditPoojaModal);
+  document.getElementById('cancelEditModalBtn').addEventListener('click', closeEditPoojaModal);
+  document.getElementById('editPoojaModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditPoojaModal();
   });
-  document.getElementById('cancelEditModalBtn').addEventListener('click', function() {
-    document.getElementById('editPujaModal').style.display = 'none';
-    document.getElementById('editPujaForm').reset();
-    document.getElementById('editPujaMessage').style.display = 'none';
-  });
-  document.getElementById('editPujaModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-      this.style.display = 'none';
-      document.getElementById('editPujaForm').reset();
-      document.getElementById('editPujaMessage').style.display = 'none';
-    }
-  });
-  document.getElementById('editPujaForm').addEventListener('submit', function(e) {
+  document.getElementById('editPoojaForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    var id = document.getElementById('editPujaId').value;
+    var id = document.getElementById('editPoojaId').value;
     if (!id) return;
     var startTime = document.getElementById('editStartTime').value.trim();
     var endTime = document.getElementById('editEndTime').value.trim();
     if (startTime && !hasAmPm(startTime)) {
-      document.getElementById('editPujaMessage').textContent = 'Start Time must use 12-hour format with AM/PM (e.g. 9:00 AM).';
-      document.getElementById('editPujaMessage').style.display = 'block';
+      document.getElementById('editPoojaMessage').textContent = 'Start Time must use 12-hour format with AM/PM (e.g. 9:00 AM).';
+      document.getElementById('editPoojaMessage').style.display = 'block';
       return;
     }
     if (endTime && !hasAmPm(endTime)) {
-      document.getElementById('editPujaMessage').textContent = 'End Time must use 12-hour format with AM/PM (e.g. 9:30 AM).';
-      document.getElementById('editPujaMessage').style.display = 'block';
+      document.getElementById('editPoojaMessage').textContent = 'End Time must use 12-hour format with AM/PM (e.g. 9:30 AM).';
+      document.getElementById('editPoojaMessage').style.display = 'block';
       return;
     }
     var details = parseDetails(document.getElementById('editDetails').value);
     for (var i = 0; i < details.length; i++) {
       if (details[i] && details[i].time && !hasAmPm(details[i].time)) {
-        document.getElementById('editPujaMessage').textContent = 'Sub-events must use 12-hour format with AM/PM.';
-        document.getElementById('editPujaMessage').style.display = 'block';
+        document.getElementById('editPoojaMessage').textContent = 'Sub-events must use 12-hour format with AM/PM.';
+        document.getElementById('editPoojaMessage').style.display = 'block';
         return;
       }
       if (details[i] && details[i].time) details[i].time = normalizeAmPm(details[i].time);
     }
-    var puja = {
+    var pooja = {
       _update: true,
       id: id,
       title: document.getElementById('editTitle').value.trim(),
@@ -377,18 +414,18 @@
       endTime: normalizeAmPm(endTime),
       details: details
     };
-    fetch(API, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()), body: JSON.stringify(puja) })
+    fetch(API, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()), body: JSON.stringify(pooja) })
       .then(function(r) {
-        if (r.status === 401) { showLogin(); document.getElementById('editPujaModal').style.display = 'none'; return; }
-        if (r.ok) { document.getElementById('editPujaModal').style.display = 'none'; loadPujas(); return; }
+        if (r.status === 401) { showLogin(); closeEditPoojaModal(); return; }
+        if (r.ok) { closeEditPoojaModal(); loadPoojas(); return; }
         return r.json().catch(function() { return {}; }).then(function(d) {
-          document.getElementById('editPujaMessage').textContent = d.error || ('Update failed (status ' + r.status + ')');
-          document.getElementById('editPujaMessage').style.display = 'block';
+          document.getElementById('editPoojaMessage').textContent = d.error || ('Update failed (status ' + r.status + ')');
+          document.getElementById('editPoojaMessage').style.display = 'block';
         });
       })
       .catch(function(err) {
-        document.getElementById('editPujaMessage').textContent = 'Update failed. ' + (err.message || '');
-        document.getElementById('editPujaMessage').style.display = 'block';
+        document.getElementById('editPoojaMessage').textContent = 'Update failed. ' + (err.message || '');
+        document.getElementById('editPoojaMessage').style.display = 'block';
       });
   });
 
@@ -398,25 +435,10 @@
     document.getElementById('currentPassword').focus();
   });
 
-  document.getElementById('closeModalBtn').addEventListener('click', function() {
-    document.getElementById('changePasswordModal').style.display = 'none';
-    document.getElementById('changePasswordForm').reset();
-    document.getElementById('changePasswordMessage').style.display = 'none';
-  });
-
-  document.getElementById('cancelModalBtn').addEventListener('click', function() {
-    document.getElementById('changePasswordModal').style.display = 'none';
-    document.getElementById('changePasswordForm').reset();
-    document.getElementById('changePasswordMessage').style.display = 'none';
-  });
-
-  // Close modal on outside click
+  document.getElementById('closeModalBtn').addEventListener('click', closeChangePasswordModal);
+  document.getElementById('cancelModalBtn').addEventListener('click', closeChangePasswordModal);
   document.getElementById('changePasswordModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-      this.style.display = 'none';
-      document.getElementById('changePasswordForm').reset();
-      document.getElementById('changePasswordMessage').style.display = 'none';
-    }
+    if (e.target === this) closeChangePasswordModal();
   });
 
   document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
@@ -454,8 +476,8 @@
           msgEl.style.display = 'block';
           msgEl.style.color = '#27ae60';
           document.getElementById('changePasswordForm').reset();
-          setTimeout(function() { 
-            document.getElementById('changePasswordModal').style.display = 'none';
+          setTimeout(function() {
+            closeChangePasswordModal();
             msgEl.style.display = 'none';
           }, 2000);
         } else {

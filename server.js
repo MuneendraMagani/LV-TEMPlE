@@ -102,59 +102,59 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // API: GET pujas (public)
-  if (pathname === '/api/pujas' && req.method === 'GET') {
+  // API: GET poojas (public)
+  if (pathname === '/api/poojas' && req.method === 'GET') {
     try {
-      const data = await db.getPujas();
-      const pujas = data.pujas || [];
+      const data = await db.getPoojas();
+      const poojas = data.poojas || [];
       log(req, res, 200);
       res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-      res.end(JSON.stringify({ pujas }));
+      res.end(JSON.stringify({ poojas }));
     } catch (e) {
-      console.error('GET /api/pujas error:', e.message);
+      console.error('GET /api/poojas error:', e.message);
       log(req, res, 500);
-      sendJson(res, 500, { error: 'Failed to load pujas' });
+      sendJson(res, 500, { error: 'Failed to load poojas' });
     }
     return;
   }
 
-  // API: POST add or update puja (admin only) - same URL as add; include id in body for update
-  if (pathname === '/api/pujas' && req.method === 'POST') {
+  // API: POST add or update pooja (admin only)
+  if (pathname === '/api/poojas' && req.method === 'POST') {
     if (!isAuthenticated(req)) {
       sendJson(res, 401, { error: 'Login required' });
       return;
     }
     try {
-      const puja = await parseBody(req);
-      const isUpdate = puja && (puja._update === true || puja._action === 'update');
-      const id = puja && (puja.id || puja._id);
+      const pooja = await parseBody(req);
+      const isUpdate = pooja && (pooja._update === true || pooja._action === 'update');
+      const id = pooja && (pooja.id || pooja._id);
       if (isUpdate && id != null && String(id).trim() !== '') {
-        const { id: _id, _update, _action, ...rest } = puja;
-        const updated = await db.updatePuja(String(id).trim(), rest);
+        const { id: _id, _update, _action, ...rest } = pooja;
+        const updated = await db.updatePooja(String(id).trim(), rest);
         log(req, res, 200);
         sendJson(res, 200, { ...updated, id: String(id) });
       } else {
-        const created = await db.addPuja(puja);
+        const created = await db.addPooja(pooja);
         log(req, res, 201);
         sendJson(res, 201, created);
       }
     } catch (e) {
-      console.error('POST /api/pujas error:', e.message);
+      console.error('POST /api/poojas error:', e.message);
       log(req, res, 400);
       sendJson(res, 400, { error: e.message || 'Invalid request' });
     }
     return;
   }
 
-  // API: DELETE puja (admin only)
-  if (pathname.startsWith('/api/pujas/') && req.method === 'DELETE') {
+  // API: DELETE pooja (admin only)
+  if (pathname.startsWith('/api/poojas/') && req.method === 'DELETE') {
     if (!isAuthenticated(req)) {
       sendJson(res, 401, { error: 'Login required' });
       return;
     }
-    const id = pathname.replace(/^\/api\/pujas\//, '');
+    const id = pathname.replace(/^\/api\/poojas\//, '');
     try {
-      await db.deletePuja(id);
+      await db.deletePooja(id);
       sendJson(res, 200, { success: true });
     } catch (e) {
       sendJson(res, 500, { error: 'Delete failed' });
@@ -290,7 +290,7 @@ const server = http.createServer(async (req, res) => {
 async function start() {
   await db.init();
   server.listen(PORT, () => {
-    console.log(`Puja Display server running at http://localhost:${PORT}`);
+    console.log(`Pooja Display server running at http://localhost:${PORT}`);
     console.log(`TV Display: http://localhost:${PORT}/`);
     console.log(`Admin:      http://localhost:${PORT}/admin`);
   });

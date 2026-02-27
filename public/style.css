@@ -90,7 +90,7 @@ body {
   z-index: 1;
 }
 
-/* Section 2: Puja events below header - fills remaining viewport */
+/* Section 2: Pooja events below header - fills remaining viewport */
 .main-content {
   flex: 1;
   min-height: 0;
@@ -106,7 +106,7 @@ body {
 }
 
 /* Cards section - main + upcoming */
-.puja-cards-section {
+.pooja-cards-section {
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -116,7 +116,7 @@ body {
   padding-top: 0.75rem;
 }
 
-.puja-main-wrap {
+.pooja-main-wrap {
   flex: 1 1 62%;
   min-height: 0;
   display: flex;
@@ -124,7 +124,7 @@ body {
 }
 
 /* Shared card styling - golden border, cream bg, accents */
-.puja-card-details-bar {
+.pooja-card-details-bar {
   background: linear-gradient(90deg, #fff8e1 0%, #fff3c4 50%, #fff8e1 100%);
   color: #5d4e37;
   font-size: 0.7rem;
@@ -135,7 +135,7 @@ body {
   border-radius: 4px;
 }
 
-.puja-card-accent {
+.pooja-card-accent {
   position: absolute;
   width: 24px;
   height: 24px;
@@ -145,7 +145,7 @@ body {
   opacity: 0.7;
 }
 
-.puja-card-accent--tr {
+.pooja-card-accent--tr {
   top: 8px;
   right: 8px;
   border-top-width: 2px;
@@ -153,7 +153,7 @@ body {
   border-radius: 0 6px 0 0;
 }
 
-.puja-card-accent--bl {
+.pooja-card-accent--bl {
   bottom: 8px;
   left: 8px;
   border-bottom-width: 2px;
@@ -162,7 +162,7 @@ body {
 }
 
 /* Main card - today's events - fill space with big text */
-.puja-main-card {
+.pooja-main-card {
   position: relative;
   flex: 1;
   min-height: 160px;
@@ -176,10 +176,10 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.puja-main-title {
+.pooja-main-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(1rem, 2.5vw, 1.25rem);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--maroon);
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -188,7 +188,7 @@ body {
   margin-bottom: 0.25rem;
 }
 
-.puja-main-items {
+.pooja-main-items {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -196,7 +196,7 @@ body {
   flex: 1;
 }
 
-.puja-main-item {
+.pooja-main-item {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -204,56 +204,64 @@ body {
   gap: 2.5rem;
 }
 
-.puja-main-event {
+.pooja-main-event {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(1.5rem, 4.5vw, 2.5rem);
   font-weight: 700;
   color: #3a1810;
 }
 
-.puja-main-time {
+.pooja-main-time {
   font-size: clamp(1.15rem, 3.5vw, 1.75rem);
   font-weight: 600;
   color: var(--text-brown);
 }
 
+/* Larger font when only 1 event in main card */
+.pooja-main-card--count-1 .pooja-main-event {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+}
+.pooja-main-card--count-1 .pooja-main-time {
+  font-size: clamp(1.5rem, 4.5vw, 2.25rem);
+}
+
 /* Auto-adjust for 3 events */
-.puja-main-card--count-3 .puja-main-event {
+.pooja-main-card--count-3 .pooja-main-event {
   font-size: clamp(1.3rem, 3.8vw, 2rem);
 }
-.puja-main-card--count-3 .puja-main-time {
+.pooja-main-card--count-3 .pooja-main-time {
   font-size: clamp(1rem, 3vw, 1.4rem);
 }
-.puja-main-card--count-3 .puja-main-items {
+.pooja-main-card--count-3 .pooja-main-items {
   gap: clamp(0.5rem, 2vw, 1rem);
 }
 
 /* Auto-adjust for 4+ events */
-.puja-main-card--count-4 .puja-main-event,
-.puja-main-card--count-5 .puja-main-event {
+.pooja-main-card--count-4 .pooja-main-event,
+.pooja-main-card--count-5 .pooja-main-event {
   font-size: clamp(1.1rem, 3vw, 1.6rem);
 }
-.puja-main-card--count-4 .puja-main-time,
-.puja-main-card--count-5 .puja-main-time {
+.pooja-main-card--count-4 .pooja-main-time,
+.pooja-main-card--count-5 .pooja-main-time {
   font-size: clamp(0.95rem, 2.5vw, 1.25rem);
 }
-.puja-main-card--count-4 .puja-main-items,
-.puja-main-card--count-5 .puja-main-items {
+.pooja-main-card--count-4 .pooja-main-items,
+.pooja-main-card--count-5 .pooja-main-items {
   gap: clamp(0.4rem, 1.5vw, 0.85rem);
 }
 
-.puja-info-label {
+.pooja-info-label {
   color: var(--text-brown);
   font-weight: 500;
 }
 
-.puja-info-value {
+.pooja-info-value {
   color: #3a1810;
   font-weight: 600;
 }
 
 /* Upcoming section - two cards, auto-scroll - smaller than main */
-.puja-upcoming-section {
+.pooja-upcoming-section {
   flex: 1 1 38%;
   min-height: 0;
   margin-top: 1.25rem;
@@ -261,10 +269,10 @@ body {
   flex-direction: column;
 }
 
-.puja-upcoming-heading {
+.pooja-upcoming-heading {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(1rem, 2.5vw, 1.35rem);
-  font-weight: 700;
+  font-weight: 800;
   color: #3a1810;
   text-align: center;
   margin-bottom: 0.5rem;
@@ -272,42 +280,42 @@ body {
   flex-shrink: 0;
 }
 
-.puja-upcoming-wrap {
+.pooja-upcoming-wrap {
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
 }
 
-.puja-upcoming-inner {
+.pooja-upcoming-inner {
   display: flex;
   flex-wrap: nowrap;
   height: 100%;
   will-change: transform;
 }
 
-.puja-upcoming-card {
+.pooja-upcoming-card {
   flex: 0 0 50%;
   min-width: 0;
   box-sizing: border-box;
   padding: 0.5rem;
 }
 
-.puja-upcoming-badge {
+.pooja-upcoming-badge {
   position: absolute;
   top: 8px;
   left: 8px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
-  background: linear-gradient(135deg, #d4a017 0%, #c9a227 50%, #b8860b 100%);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(184, 134, 11, 0.4);
+  background: linear-gradient(135deg, #e8c84a 0%, #e0b830 50%, #c9a227 100%);
+  color: #3a1810;
+  box-shadow: 0 2px 6px rgba(184, 134, 11, 0.25);
   z-index: 2;
 }
 
-.puja-upcoming-card-inner {
+.pooja-upcoming-card-inner {
   position: relative;
   background: linear-gradient(145deg, #fdf8f0 0%, #faf0e1 50%, #f5e6d3 100%);
   border: 2px solid rgba(184, 134, 11, 0.5);
@@ -320,20 +328,20 @@ body {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.puja-upcoming-card-inner .puja-card-accent {
+.pooja-upcoming-card-inner .pooja-card-accent {
   width: 18px;
   height: 18px;
 }
 
-.puja-upcoming-card-inner .puja-card-accent--tr {
+.pooja-upcoming-card-inner .pooja-card-accent--tr {
   display: none;
 }
 
-.puja-upcoming-card-inner .puja-card-accent--bl {
+.pooja-upcoming-card-inner .pooja-card-accent--bl {
   display: none;
 }
 
-.puja-upcoming-title {
+.pooja-upcoming-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
@@ -341,7 +349,7 @@ body {
   line-height: 1.2;
 }
 
-.puja-upcoming-row {
+.pooja-upcoming-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -349,17 +357,17 @@ body {
   flex-wrap: wrap;
 }
 
-.puja-upcoming-row .puja-upcoming-info {
+.pooja-upcoming-row .pooja-upcoming-info {
   margin-top: 0;
 }
 
-.puja-upcoming-card-inner .puja-card-details-bar {
+.pooja-upcoming-card-inner .pooja-card-details-bar {
   padding: 0.3rem 0.75rem;
   margin: 0.5rem 0 0.4rem;
   font-size: 0.65rem;
 }
 
-.puja-upcoming-info {
+.pooja-upcoming-info {
   font-size: clamp(1.15rem, 2.4vw, 1.45rem);
   color: var(--text-brown);
   font-weight: 600;
@@ -385,7 +393,7 @@ body {
 }
 
 /* No events state */
-.puja-cards-section.no-events .puja-placeholder {
+.pooja-cards-section.no-events .pooja-placeholder {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem;
   color: #888;
@@ -436,33 +444,33 @@ body {
   padding: 2vw 3vw;
 }
 
-.tv-mode .puja-main-event {
+.tv-mode .pooja-main-event {
   font-size: clamp(2rem, 3vw, 3.2rem);
 }
 
-.tv-mode .puja-main-time {
+.tv-mode .pooja-main-time {
   font-size: clamp(1.5rem, 2vw, 2.2rem);
 }
 
-.tv-mode .puja-upcoming-title {
+.tv-mode .pooja-upcoming-title {
   font-size: clamp(1.8rem, 2.5vw, 2.5rem);
 }
 
-.tv-mode .puja-upcoming-info {
+.tv-mode .pooja-upcoming-info {
   font-size: clamp(1.2rem, 1.5vw, 1.5rem);
 }
 
 /* Mobile Mode - stack layout vertically */
-.mobile-mode .puja-main-item {
+.mobile-mode .pooja-main-item {
   flex-direction: column;
   align-items: flex-start;
 }
 
-.mobile-mode .puja-upcoming-inner {
+.mobile-mode .pooja-upcoming-inner {
   flex-direction: column;
 }
 
-.mobile-mode .puja-upcoming-card {
+.mobile-mode .pooja-upcoming-card {
   flex: 0 0 100%;
 }
 

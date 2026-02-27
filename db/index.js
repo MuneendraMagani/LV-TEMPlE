@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-const DATA_FILE = path.join(__dirname, '..', 'data', 'pujas.json');
+const DATA_FILE = path.join(__dirname, '..', 'data', 'poojas.json');
 const ADMINS_FILE = path.join(__dirname, '..', 'data', 'admins.json');
 const ROLES = { SUPER_ADMIN: 'SUPER_ADMIN', ADMIN: 'ADMIN' };
 
@@ -31,16 +31,16 @@ function useSnowflake() {
 }
 
 // ---------- JSON file (fallback) ----------
-function readPujasFile() {
+function readPoojasFile() {
   try {
     const data = fs.readFileSync(DATA_FILE, 'utf8');
     return JSON.parse(data);
   } catch (e) {
-    return { pujas: [] };
+    return { poojas: [] };
   }
 }
 
-function writePujasFile(data) {
+function writePoojasFile(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
@@ -72,7 +72,7 @@ function runQuery(sql, binds = []) {
 
 async function init() {
   if (!useSnowflake()) {
-    console.log('DB: Using JSON file (data/pujas.json). Set Snowflake env vars to use Snowflake.');
+    console.log('DB: Using JSON file (data/poojas.json). Set Snowflake env vars to use Snowflake.');
     return;
   }
   console.log('DB: Using Snowflake.');
@@ -97,20 +97,12 @@ function toTime24(timeStr) {
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00';
 }
 
-function oneWeekLater(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00');
-  d.setDate(d.getDate() + 6);
-  return d.toISOString().slice(0, 10);
-}
-
-function sortPujasAsc(data) {
+function sortPoojasAsc(data) {
   const today = new Date().toISOString().slice(0, 10);
-  const weekEnd = oneWeekLater(today);
-  const list = (data.pujas || []).filter((p) => {
+  const list = (data.poojas || []).filter((p) => {
     if (p.isActive === false) return false;
-    const startDate = p.startDate || '';
     const endDate = p.endDate || p.startDate;
-    return endDate && endDate >= today && startDate && startDate <= weekEnd;
+    return endDate && endDate >= today;
   });
   const isToday = (p) => (p.startDate || '') === today;
   const key = (p) => (p.startDate || '').replace(/-/g, '') + String(parseTimeToMinutes(p.startTime) || 0).padStart(4, '0');
@@ -119,20 +111,19 @@ function sortPujasAsc(data) {
     if (!isToday(a) && isToday(b)) return 1;
     return key(a).localeCompare(key(b));
   });
-  return { pujas: list };
+  return { poojas: list };
 }
 
-async function getPujas() {
+async function getPoojas() {
   if (!useSnowflake()) {
-    return sortPujasAsc(readPujasFile());
+    return sortPoojasAsc(readPoojasFile());
   }
   try {
     const rows = await runQuery(
       `SELECT ID, TITLE, START_DATE, START_TIME, END_DATE, END_TIME, DETAILS, IMAGE_URL, IS_ACTIVE
-       FROM PUJAS
+       FROM POOJA
        WHERE IS_ACTIVE = TRUE
          AND COALESCE(END_DATE, START_DATE) >= CURRENT_DATE()
-         AND START_DATE <= DATEADD(day, 6, CURRENT_DATE())
        ORDER BY (CASE WHEN START_DATE = CURRENT_DATE() THEN 0 ELSE 1 END), START_DATE ASC, START_TIME ASC`
     );
     const fmt = (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : (v || ''));
@@ -140,7 +131,7 @@ async function getPujas() {
       const arr = Array.isArray(d) ? d : (d && typeof d === 'object' ? Object.values(d) : []);
       return arr.map((x) => ({ time: x.time || x.TIME || '', name: x.name || x.NAME || '' }));
     };
-    const pujas = (rows || []).map((r) => ({
+    const poojas = (rows || []).map((r) => ({
       id: String(r.ID),
       title: r.TITLE,
       startDate: fmt(r.START_DATE),
@@ -151,39 +142,39 @@ async function getPujas() {
       imageUrl: r.IMAGE_URL || '',
       isActive: r.IS_ACTIVE !== false,
     }));
-    return { pujas };
+    return { poojas };
   } catch (e) {
-    console.error('getPujas error:', e.message);
-    return { pujas: [] };
+    console.error('getPoojas error:', e.message);
+    return { poojas: [] };
   }
 }
 
-async function addPuja(puja) {
+async function addPooja(pooja) {
   if (!useSnowflake()) {
-    const data = readPujasFile();
-    puja.id = Date.now().toString();
-    data.pujas.push(puja);
-    writePujasFile(data);
-    return puja;
+    const data = readPoojasFile();
+    pooja.id = Date.now().toString();
+    data.poojas.push(pooja);
+    writePoojasFile(data);
+    return pooja;
   }
   const id = Date.now().toString();
-  const detailsJson = JSON.stringify(puja.details || []);
-  const startDateStr = (puja.startDate && String(puja.startDate).trim()) || null;
-  const endDateStr = (puja.endDate && String(puja.endDate).trim()) || null;
+  const detailsJson = JSON.stringify(pooja.details || []);
+  const startDateStr = (pooja.startDate && String(pooja.startDate).trim()) || null;
+  const endDateStr = (pooja.endDate && String(pooja.endDate).trim()) || null;
   const detailsEscaped = detailsJson.replace(/\\/g, '\\\\').replace(/'/g, "''");
-  const startTime24 = (puja.startTime && String(puja.startTime).trim()) ? toTime24(puja.startTime) : null;
-  const endTime24 = (puja.endTime && String(puja.endTime).trim()) ? toTime24(puja.endTime) : null;
-  const sql = `INSERT INTO PUJAS (ID, TITLE, START_DATE, START_TIME, END_DATE, END_TIME, DETAILS, IMAGE_URL, IS_ACTIVE)
+  const startTime24 = (pooja.startTime && String(pooja.startTime).trim()) ? toTime24(pooja.startTime) : null;
+  const endTime24 = (pooja.endTime && String(pooja.endTime).trim()) ? toTime24(pooja.endTime) : null;
+  const sql = `INSERT INTO POOJA (ID, TITLE, START_DATE, START_TIME, END_DATE, END_TIME, DETAILS, IMAGE_URL, IS_ACTIVE)
        SELECT ?, ?, TRY_TO_DATE(?, 'YYYY-MM-DD'), ?, TRY_TO_DATE(?, 'YYYY-MM-DD'), ?, PARSE_JSON('${detailsEscaped}'), ?, ?`;
   const binds = [
     id,
-    puja.title || '',
+    pooja.title || '',
     startDateStr,
     startTime24,
     endDateStr,
     endTime24,
-    puja.imageUrl || '',
-    puja.isActive !== false,
+    pooja.imageUrl || '',
+    pooja.isActive !== false,
   ];
   try {
     await runQuery(sql, binds);
@@ -191,44 +182,44 @@ async function addPuja(puja) {
     const errMsg = e.message || String(e);
     const errCode = e.code != null ? e.code : '';
     const errBody = e.response && e.response.body != null ? JSON.stringify(e.response.body) : '';
-    console.error('addPuja error:', errMsg, errCode, errBody || '', e.cause || '');
+    console.error('addPooja error:', errMsg, errCode, errBody || '', e.cause || '');
     throw e;
   }
-  return { ...puja, id };
+  return { ...pooja, id };
 }
 
-async function updatePuja(id, puja) {
+async function updatePooja(id, pooja) {
   const idStr = String(id || '').trim();
-  if (!idStr) throw new Error('Puja ID required');
+  if (!idStr) throw new Error('Pooja ID required');
   if (!useSnowflake()) {
-    const data = readPujasFile();
-    const idx = data.pujas.findIndex((x) => String(x.id) === idStr);
-    if (idx < 0) throw new Error('Puja not found');
-    const existing = data.pujas[idx];
-    data.pujas[idx] = {
+    const data = readPoojasFile();
+    const idx = data.poojas.findIndex((x) => String(x.id) === idStr);
+    if (idx < 0) throw new Error('Pooja not found');
+    const existing = data.poojas[idx];
+    data.poojas[idx] = {
       ...existing,
-      title: puja.title || existing.title,
-      startDate: puja.startDate || existing.startDate,
-      startTime: puja.startTime != null ? puja.startTime : existing.startTime,
-      endDate: puja.endDate || existing.endDate,
-      endTime: puja.endTime != null ? puja.endTime : existing.endTime,
-      details: Array.isArray(puja.details) ? puja.details : (existing.details || []),
-      imageUrl: puja.imageUrl != null ? puja.imageUrl : existing.imageUrl,
+      title: pooja.title || existing.title,
+      startDate: pooja.startDate || existing.startDate,
+      startTime: pooja.startTime != null ? pooja.startTime : existing.startTime,
+      endDate: pooja.endDate || existing.endDate,
+      endTime: pooja.endTime != null ? pooja.endTime : existing.endTime,
+      details: Array.isArray(pooja.details) ? pooja.details : (existing.details || []),
+      imageUrl: pooja.imageUrl != null ? pooja.imageUrl : existing.imageUrl,
     };
-    writePujasFile(data);
-    return { ...data.pujas[idx], id: idStr };
+    writePoojasFile(data);
+    return { ...data.poojas[idx], id: idStr };
   }
-  const detailsJson = JSON.stringify(puja.details || []);
-  const startDateStr = (puja.startDate && String(puja.startDate).trim()) || null;
-  const endDateStr = (puja.endDate && String(puja.endDate).trim()) || null;
-  const startTime24 = (puja.startTime && String(puja.startTime).trim()) ? toTime24(puja.startTime) : null;
-  const endTime24 = (puja.endTime && String(puja.endTime).trim()) ? toTime24(puja.endTime) : null;
-  const sql = `UPDATE PUJAS SET TITLE = ?, START_DATE = TRY_TO_DATE(?, 'YYYY-MM-DD'), START_TIME = ?,
+  const detailsJson = JSON.stringify(pooja.details || []);
+  const startDateStr = (pooja.startDate && String(pooja.startDate).trim()) || null;
+  const endDateStr = (pooja.endDate && String(pooja.endDate).trim()) || null;
+  const startTime24 = (pooja.startTime && String(pooja.startTime).trim()) ? toTime24(pooja.startTime) : null;
+  const endTime24 = (pooja.endTime && String(pooja.endTime).trim()) ? toTime24(pooja.endTime) : null;
+  const sql = `UPDATE POOJA SET TITLE = ?, START_DATE = TRY_TO_DATE(?, 'YYYY-MM-DD'), START_TIME = ?,
     END_DATE = TRY_TO_DATE(?, 'YYYY-MM-DD'), END_TIME = ?, DETAILS = PARSE_JSON(?)
     WHERE ID = ? AND IS_ACTIVE = TRUE`;
   try {
     await runQuery(sql, [
-      puja.title || '',
+      pooja.title || '',
       startDateStr,
       startTime24,
       endDateStr,
@@ -237,21 +228,21 @@ async function updatePuja(id, puja) {
       idStr,
     ]);
   } catch (e) {
-    console.error('updatePuja Snowflake error:', e.message, e.code, e.cause || '');
+    console.error('updatePooja Snowflake error:', e.message, e.code, e.cause || '');
     throw e;
   }
-  return { ...puja, id: idStr };
+  return { ...pooja, id: idStr };
 }
 
-async function deletePuja(id) {
+async function deletePooja(id) {
   if (!useSnowflake()) {
-    const data = readPujasFile();
-    const p = data.pujas.find((x) => x.id === id);
+    const data = readPoojasFile();
+    const p = data.poojas.find((x) => x.id === id);
     if (p) p.isActive = false;
-    writePujasFile(data);
+    writePoojasFile(data);
     return;
   }
-  await runQuery(`UPDATE PUJAS SET IS_ACTIVE = FALSE WHERE ID = ?`, [id]);
+  await runQuery(`UPDATE POOJA SET IS_ACTIVE = FALSE WHERE ID = ?`, [id]);
 }
 
 async function verifyAdmin(username, password) {
@@ -393,10 +384,10 @@ async function changePassword(userId, currentPassword, newPassword) {
 
 module.exports = {
   init,
-  getPujas,
-  addPuja,
-  updatePuja,
-  deletePuja,
+  getPoojas,
+  addPooja,
+  updatePooja,
+  deletePooja,
   verifyAdmin,
   getAdmins,
   addAdmin,

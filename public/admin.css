@@ -264,7 +264,26 @@ body {
 }
 .btn-outline:hover { background: #fdf2f4; color: #5a2630; }
 
-.add-puja, .puja-list { margin-bottom: 1rem; }
+.add-pooja, .pooja-list { margin-bottom: 1rem; }
+
+/* Add Pooja form */
+.add-pooja-form .form-group { margin-bottom: 1rem; }
+.add-pooja-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+.add-pooja-form .form-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+.add-pooja-form .btn-submit { min-width: 140px; }
+.add-pooja-form .required { color: #c0392b; }
+@media (max-width: 640px) {
+  .add-pooja-form .form-row { grid-template-columns: 1fr; }
+}
 h2 { 
   font-size: 1.25rem; 
   font-weight: 700; 
@@ -376,7 +395,7 @@ input:focus, textarea:focus {
 .btn-edit { background: #6b2d3a; color: #fff; padding: 0.45rem 1rem; font-size: 0.9rem; border-radius: 8px; margin-right: 0.5rem; }
 .btn-edit:hover { background: #5a2630; }
 
-.puja-card {
+.pooja-card {
   background: #fefdfb;
   border: 1px solid #e8d48b;
   border-radius: 10px;
@@ -388,9 +407,96 @@ input:focus, textarea:focus {
   gap: 1rem;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
-.puja-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-color: #d4c070; }
-.puja-card-info h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; color: #1f2937; }
-.puja-card-info p { font-size: 0.9rem; color: #6b7280; }
+.pooja-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-color: #d4c070; }
+.pooja-card-info h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; color: #1f2937; }
+.pooja-card-info p { font-size: 0.9rem; color: #6b7280; }
+
+/* Enterprise-style Poojas table */
+.pooja-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  margin-bottom: 1rem;
+}
+.pooja-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.pooja-table th,
+.pooja-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+.pooja-table thead {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.pooja-table th {
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.pooja-table th.th-actions {
+  text-align: right;
+  width: 1%;
+}
+.pooja-table tbody tr {
+  transition: background 0.15s;
+}
+.pooja-table tbody tr:hover {
+  background: #f8fafc;
+}
+.pooja-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.pooja-table td {
+  color: #4b5563;
+}
+.pooja-table .pooja-title {
+  font-weight: 600;
+  color: #1f2937;
+  max-width: 220px;
+}
+.pooja-table .pooja-date {
+  white-space: nowrap;
+  color: #6b7280;
+}
+.pooja-table .pooja-time {
+  white-space: nowrap;
+  color: #6b7280;
+}
+.pooja-table .pooja-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+.pooja-table .pooja-actions .btn {
+  margin-left: 0.35rem;
+}
+.pooja-list-empty,
+.pooja-list-error {
+  padding: 1.25rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+.pooja-list-empty {
+  background: #f9fafb;
+  color: #6b7280;
+  border: 1px dashed #d1d5db;
+}
+.pooja-list-error {
+  background: #fef2f2;
+  color: #c0392b;
+  border: 1px solid #fecaca;
+}
 
 .manage-users { 
   margin-bottom: 1rem; 

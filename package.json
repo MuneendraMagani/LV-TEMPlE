@@ -1,7 +1,7 @@
 {
-  "name": "lvtemple-puja-display",
+  "name": "lvtemple-pooja-display",
   "version": "1.0.0",
-  "description": "Puja TV display & admin for Lakshmi Venkateswara Temple",
+  "description": "Pooja TV display & admin for Lakshmi Venkateswara Temple",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,7 @@
   },
   "keywords": [
     "temple",
-    "puja",
+    "pooja",
     "display"
   ],
   "author": "",
